@@ -21,17 +21,18 @@ jobs:
         pip install selenium
         pip install bs4
 
-   -  name: Set up ChromeDriver
-  run: |
-    sudo apt-get update
-    sudo apt-get install -y libglib2.0-0 libnss3 libgconf-2-4 libfontconfig1
-    CHROME_DRIVER_VERSION=`curl -sS chromedriver.storage.googleapis.com/LATEST_RELEASE`
-    wget -N http://chromedriver.storage.googleapis.com/$CHROME_DRIVER_VERSION/chromedriver_linux64.zip -P ~/
-    unzip ~/chromedriver_linux64.zip -d ~/
-    sudo mv -f ~/chromedriver /usr/local/share/
-    sudo chmod +x /usr/local/share/chromedriver
-    sudo ln -sf /usr/local/share/chromedriver /usr/local/bin/chromedriver
-    sudo ln -sf /usr/local/share/chromedriver /usr/bin/chromedriver
+    - name: Set up ChromeDriver
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y libglib2.0-0 libnss3 libgconf-2-4 libfontconfig1
+        CHROME_DRIVER_VERSION=`curl -sS chromedriver.storage.googleapis.com/LATEST_RELEASE`
+        wget -N http://chromedriver.storage.googleapis.com/$CHROME_DRIVER_VERSION/chromedriver_linux64.zip -P ~/
+        unzip ~/chromedriver_linux64.zip -d ~/
+        sudo mv -f ~/chromedriver /usr/local/share/
+        sudo chmod +x /usr/local/share/chromedriver
+        sudo ln -sf /usr/local/share/chromedriver /usr/local/bin/chromedriver
+        sudo ln -sf /usr/local/share/chromedriver /usr/bin/chromedriver
 
     - name: Run Selenium Script
       run: python main.py  # Replace with the path to your script
+
