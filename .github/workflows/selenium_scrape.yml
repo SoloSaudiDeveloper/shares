@@ -21,15 +21,14 @@ jobs:
         pip install selenium
         pip install bs4
 
-    - name: Set up ChromeDriver
+    - name: Download and Set up ChromeDriver
       run: |
         sudo apt-get update
         sudo apt-get install -y libglib2.0-0 libnss3 libgconf-2-4 libfontconfig1
-        CHROME_DRIVER_VERSION="120.0.6099.109"
-        CHROME_DRIVER_URL="https://edgedl.me.gvt1.com/edgedl/chrome/chrome-for-testing/${CHROME_DRIVER_VERSION}/linux64/chromedriver-linux64.zip"
-        wget -N $CHROME_DRIVER_URL -P ~/
-        unzip ~/chromedriver-linux64.zip -d ~/
-        sudo mv -f ~/chromedriver-linux64/chromedriver-linux64/chromedriver /usr/local/share/
+        CHROME_DRIVER_URL="https://drive.google.com/file/d/1hX5RZQPmJQ1VcTaYq5nWAnYWvUJOScug/view?usp=sharing"
+        wget -N $CHROME_DRIVER_URL -O chromedriver_linux64.zip
+        unzip chromedriver_linux64.zip -d ~/
+        sudo mv -f ~/chromedriver /usr/local/share/
         sudo chmod +x /usr/local/share/chromedriver
         sudo ln -sf /usr/local/share/chromedriver /usr/local/bin/chromedriver
         sudo ln -sf /usr/local/share/chromedriver /usr/bin/chromedriver
