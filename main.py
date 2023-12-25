@@ -1,13 +1,15 @@
 from selenium import webdriver
-from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.chrome.options import Options
 
 def google_search(query):
-    # Set up headless option
     options = Options()
     options.headless = True
+    options.add_argument("--no-sandbox")  # This make Chrome run as root in Docker
+    options.add_argument("--disable-dev-shm-usage")  # Overcome limited resource problems
+    options.add_argument("--disable-gpu")  # applicable to windows os only
+    options.add_argument("--start-maximized")
+    options.add_argument("--remote-debugging-port=9222")
 
-    # Set path to chromedriver as per your configuration
     driver = webdriver.Chrome(options=options)
 
     try:
