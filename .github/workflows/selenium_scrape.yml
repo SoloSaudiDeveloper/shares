@@ -14,17 +14,20 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v2
       with:
-        python-version: '3.8'  # Specify your Python version
+        python-version: '3.8'
 
     - name: Install Python Dependencies
       run: |
         pip install selenium
         pip install bs4
 
-    - name: Download and Set up ChromeDriver
+    - name: Install Google Chrome
       run: |
         sudo apt-get update
-        sudo apt-get install -y libglib2.0-0 libnss3 libgconf-2-4 libfontconfig1
+        sudo apt-get install -y google-chrome-stable
+
+    - name: Download and Set up ChromeDriver
+      run: |
         CHROME_DRIVER_URL="https://drive.google.com/uc?export=download&id=1H6p3Pm9LNlUvBtjCQoeyREJmFdSxnkE_"
         wget -N $CHROME_DRIVER_URL -O chromedriver.zip
         unzip chromedriver.zip -d ~/
@@ -34,4 +37,4 @@ jobs:
         sudo ln -sf /usr/local/share/chromedriver /usr/bin/chromedriver
 
     - name: Run Selenium Script
-      run: python main.py  # Replace with the path to your script
+      run: python main.py
