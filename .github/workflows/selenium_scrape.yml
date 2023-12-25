@@ -25,9 +25,9 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install -y libglib2.0-0 libnss3 libgconf-2-4 libfontconfig1
-        CHROME_DRIVER_URL="https://drive.google.com/file/d/1hX5RZQPmJQ1VcTaYq5nWAnYWvUJOScug/view?usp=sharing"
-        wget -N $CHROME_DRIVER_URL -O chromedriver_linux64.zip
-        unzip chromedriver_linux64.zip -d ~/
+        CHROME_DRIVER_URL="https://drive.google.com/uc?export=download&id=1H6p3Pm9LNlUvBtjCQoeyREJmFdSxnkE_"
+        wget -N $CHROME_DRIVER_URL -O chromedriver.zip
+        unzip chromedriver.zip -d ~/
         sudo mv -f ~/chromedriver /usr/local/share/
         sudo chmod +x /usr/local/share/chromedriver
         sudo ln -sf /usr/local/share/chromedriver /usr/local/bin/chromedriver
