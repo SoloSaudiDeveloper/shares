@@ -1,8 +1,7 @@
-name: Daily Selenium Scraping
+name: Selenium Scraper
 
 on:
-  schedule:
-    - cron: '0 0 * * *'  # Runs at 00:00 UTC every day
+  push: # Trigger on push, you can change this to a schedule
 
 jobs:
   scrape:
@@ -17,12 +16,22 @@ jobs:
       with:
         python-version: '3.8'  # Specify your Python version
 
-    - name: Install Dependencies
+    - name: Install Python Dependencies
       run: |
         pip install selenium
-        pip install bs4
-        pip install webdriver-manager
-        # Add any other dependencies
 
-    - name: Run Script
-      run: python your_script.py  # Replace with your script name
+    - name: Set up ChromeDriver
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y libglib2.0-0 libnss3 libgconf-2-4 libfontconfig1
+        CHROME_DRIVER_VERSION=`curl -sS chromedriver.storage.googleapis.com/LATEST_RELEASE`
+        wget -N http://chromedriver.storage.googleapis.com/$CHROME_DRIVER_VERSION/chromedriver_linux64.zip -P ~/
+        unzip ~/chromedriver_linux64.zip -d ~/
+        rm ~/chromedriver_linux64.zip
+        sudo mv -f ~/chromedriver /usr/local/share/
+        sudo chmod +x /usr/local/share/chromedriver
+        sudo ln -s /usr/local/share/chromedriver /usr/local/bin/chromedriver
+        sudo ln -s /usr/local/share/chromedriver /usr/bin/chromedriver
+
+    - name: Run Selenium Script
+      run: python main.py  # Replace with the path to your script
