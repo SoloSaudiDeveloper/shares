@@ -28,8 +28,8 @@ jobs:
         CHROME_DRIVER_VERSION="120.0.6099.109"
         CHROME_DRIVER_URL="https://edgedl.me.gvt1.com/edgedl/chrome/chrome-for-testing/${CHROME_DRIVER_VERSION}/linux64/chromedriver-linux64.zip"
         wget -N $CHROME_DRIVER_URL -P ~/
-        unzip ~/chromedriver-linux64.zip -d ~/chromedriver-linux64
-        sudo mv -f ~/chromedriver-linux64/chromedriver /usr/local/share/
+        unzip ~/chromedriver-linux64.zip -d ~/
+        sudo mv -f ~/chromedriver-linux64/chromedriver-linux64/chromedriver /usr/local/share/
         sudo chmod +x /usr/local/share/chromedriver
         sudo ln -sf /usr/local/share/chromedriver /usr/local/bin/chromedriver
         sudo ln -sf /usr/local/share/chromedriver /usr/bin/chromedriver
