@@ -46,7 +46,7 @@ def process_element(element_html, number, output_data):
     matches = re.findall(pattern, element_text)
     flattened_matches = [item for sublist in matches for item in sublist if item]
     separated_text = ' '.join(flattened_matches)
-    output_data.append(f"{number}: {separated_text}")
+    output_data.append([number, separated_text])
 
 # Initialize Selenium WebDriver
 chrome_options = Options()
@@ -56,8 +56,11 @@ chrome_options.add_argument('--disable-dev-shm-usage')
 chrome_options.add_argument("--disable-gpu")
 browser = webdriver.Chrome(options=chrome_options)
 
-# Path to the CSV file
+# Path to the input CSV file
 csv_file_path = 'Symbols.csv'
+
+# Path to the output CSV file
+output_csv_file_path = 'OutputResults.csv'
 
 # Read symbols from the CSV file
 symbols = []
@@ -66,10 +69,13 @@ with open(csv_file_path, newline='') as csvfile:
     next(csv_reader, None)  # Skip the header if there is one
     symbols = [row[0] for row in csv_reader]
 
-# Process each symbol and print the result
-for number in symbols:
-    data = process_url(number, browser)
-    for item in data:
-        print(item)
+# Open the output CSV file for writing
+with open(output_csv_file_path, 'w', newline='', encoding='utf-8') as out_csvfile:
+    csv_writer = csv.writer(out_csvfile)
+    # Process each symbol and write results to the CSV file
+    for number in symbols:
+        data = process_url(number, browser)
+        for row in data:
+            csv_writer.writerow(row)
 
 browser.quit()
