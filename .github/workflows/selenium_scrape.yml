@@ -2,6 +2,8 @@ name: Selenium Scraper
 
 on:
   push: # Trigger on push, you can change this to a schedule
+permissions:
+  contents: write  # Allows the workflow to write to the repository
 
 jobs:
   scrape:
