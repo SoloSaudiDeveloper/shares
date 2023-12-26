@@ -45,7 +45,7 @@ jobs:
         ACCESS_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
       run: |
         git config --global user.name 'SoloSaudiDeveloper'
-        git config --global user.email '129058502+SoloSaudiDeveloper@users.noreply.github.com'
+        git config --global user.email 'SoloSaudiDeveloper@gmail.com'
         git add OutputResults.csv
         git commit -m "Update output CSV file" || echo "No changes to commit"
         git push https://${{ secrets.PERSONAL_ACCESS_TOKEN }}@github.com/SoloSaudiDeveloper/shares.git main
