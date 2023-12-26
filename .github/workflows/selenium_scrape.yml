@@ -37,5 +37,15 @@ jobs:
         sudo ln -sf /usr/local/share/chromedriver /usr/local/bin/chromedriver
         sudo ln -sf /usr/local/share/chromedriver /usr/bin/chromedriver
 
+    - name: Commit and Push Output File
+      run: |
+        git config --global user.name 'SoloSaudiDeveloper'
+        git config --global user.email 'SoloSaudiDeveloper@gmail.com'
+        git add OutputResults.csv
+        git commit -m "Update output CSV file" || echo "No changes to commit"
+        git push
+
+
     - name: Run Selenium Script
       run: python main.py
+      
