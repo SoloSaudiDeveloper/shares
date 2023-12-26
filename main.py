@@ -63,19 +63,32 @@ csv_file_path = 'Symbols.csv'
 output_csv_file_path = 'OutputResults.csv'
 
 # Read symbols from the CSV file
+print("Reading symbols from the CSV file...")
 symbols = []
-with open(csv_file_path, newline='') as csvfile:
-    csv_reader = csv.reader(csvfile)
-    next(csv_reader, None)  # Skip the header if there is one
-    symbols = [row[0] for row in csv_reader]
+try:
+    with open(csv_file_path, newline='') as csvfile:
+        csv_reader = csv.reader(csvfile)
+        next(csv_reader, None)  # Skip the header if there is one
+        symbols = [row[0] for row in csv_reader]
+    print(f"Symbols loaded: {symbols}")
+except FileNotFoundError:
+    print(f"Error: File not found - {csv_file_path}")
 
-# Open the output CSV file for writing
-with open(output_csv_file_path, 'w', newline='', encoding='utf-8') as out_csvfile:
-    csv_writer = csv.writer(out_csvfile)
-    # Process each symbol and write results to the CSV file
-    for number in symbols:
-        data = process_url(number, browser)
-        for row in data:
-            csv_writer.writerow(row)
+# Check if symbols were loaded
+if not symbols:
+    print("No symbols to process.")
+else:
+    # Open the output CSV file for writing
+    with open(output_csv_file_path, 'w', newline='', encoding='utf-8') as out_csvfile:
+        csv_writer = csv.writer(out_csvfile)
+        for number in symbols:
+            print(f"Processing symbol: {number}")
+            data = process_url(number, browser)
+            if data:
+                for row in data:
+                    print(f"Writing to CSV: {row}")
+                    csv_writer.writerow(row)
+            else:
+                print(f"No data found for symbol: {number}")
 
 browser.quit()
