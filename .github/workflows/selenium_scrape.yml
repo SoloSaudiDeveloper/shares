@@ -3,8 +3,8 @@ name: Selenium Scraper
 on:
   push: # Trigger on push, you can change this to a schedule
   schedule:
-    - cron: '* * * * *'  # Runs every minute
-
+    
+  - cron: '0 13 * * 0-4'  # Runs at 1 PM UTC, equivalent to 4 PM Riyadh time, from Sunday to Thursday
   
 permissions:
   contents: write  # Allows the workflow to write to the repository
