@@ -5,19 +5,17 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from bs4 import BeautifulSoup
-import re
 
-def process_url(browser, symbol, xpath_template):
+def process_url(browser, symbol, website_template, xpath_template):
     print(f"Processing symbol {symbol}...")
-    url = f"https://www.tradingview.com/symbols/TADAWUL-{symbol}/financials-dividends/"
-    browser.get(url)
+    formatted_website_url = website_template.format(number=symbol)
+    browser.get(formatted_website_url)
 
     output_data = []
     index = 1  # Start the index at 1
 
     while True:
-        # Replace the index placeholder with the current index
-        current_xpath = xpath_template.format(loop=index)
+        current_xpath = xpath_template.format(index)  # Assuming positional argument for loop index
         try:
             # Wait for the element and get its HTML
             element = WebDriverWait(browser, 10).until(
@@ -34,11 +32,10 @@ def process_url(browser, symbol, xpath_template):
 def process_element(element_html):
     soup = BeautifulSoup(element_html, 'html.parser')
     element_text = soup.get_text()
-    # Here you could process the text further if needed
     return element_text
 
 # Path to the input CSV file with symbols
-symbols_csv_file_path = 'Symbols.csv'
+symbols_csv_file_path = 'symbols.csv'
 
 # Path to the XPath CSV file
 xpath_csv_file_path = 'xpath.csv'
@@ -52,7 +49,8 @@ chrome_options.add_argument('--no-sandbox')
 chrome_options.add_argument('--headless')
 chrome_options.add_argument('--disable-dev-shm-usage')
 chrome_options.add_argument("--disable-gpu")
-#Initialize Selenium WebDriver
+
+# Initialize Selenium WebDriver
 browser = webdriver.Chrome(options=chrome_options)
 
 # Read symbols from the CSV file
@@ -66,15 +64,18 @@ try:
     print(f"Symbols loaded: {symbols}")
 except FileNotFoundError:
     print(f"Error: File not found - {symbols_csv_file_path}")
+    browser.quit()
 
 # Read the XPath template from the CSV file
 try:
     with open(xpath_csv_file_path, newline='', encoding='utf-8') as csvfile:
         csv_reader = csv.reader(csvfile)
-        xpath_template = next(csv_reader)[1]  # Assuming the XPath is in the second column
+        website_template, xpath_template, _ = next(csv_reader)
+    print(f"Website template loaded: {website_template}")
     print(f"XPath template loaded: {xpath_template}")
 except FileNotFoundError:
     print(f"Error: File not found - {xpath_csv_file_path}")
+    browser.quit()
 
 # Check if symbols and XPath template were loaded
 if not symbols or not xpath_template:
@@ -83,16 +84,16 @@ if not symbols or not xpath_template:
 else:
     # Open the output CSV file for writing
     with open(output_csv_file_path, 'w', newline='', encoding='utf-8') as out_csvfile:
-        csv_writer = csv.writer(out_csvfile)
-        # Process each symbol with the XPath template
-        for symbol in symbols:
-            data = process_url(browser, symbol, xpath_template)
-            if data:
-                for element_text in data:
-                    csv_writer.writerow([symbol, element_text])
-                print(f"Data written for symbol {symbol}: {element_text}")
-            else:
-                print(f"No data found for symbol {symbol}")
+     csv_writer = csv.writer(out_csvfile)
+    # Process each symbol with the XPath template
+    for symbol in symbols:
+        data = process_url(browser, symbol, website_template, xpath_template)
+        if data:
+            for element_text in data:
+                csv_writer.writerow([symbol, element_text])
+            print(f"Data written for symbol {symbol}: {element_text}")
+        else:
+            print(f"No data found for symbol {symbol}")
 
 # Close the browser after all symbols have been processed
 browser.quit()
