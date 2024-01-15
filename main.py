@@ -9,6 +9,7 @@ from bs4 import BeautifulSoup
 def process_url(browser, symbol, website_template, xpath_template):
     print(f"Processing symbol {symbol}...")
     formatted_website_url = website_template.format(number=symbol)
+    print(f"Debug: Formatted website URL for symbol {symbol}: {formatted_website_url}")  # Debug info
     browser.get(formatted_website_url)
 
     output_data = []
@@ -16,6 +17,7 @@ def process_url(browser, symbol, website_template, xpath_template):
 
     while True:
         current_xpath = xpath_template.format(index)  # Assuming positional argument for loop index
+        print(f"Debug: Formatted XPath for symbol {symbol} at index {index}: {current_xpath}")  # Debug info
         try:
             # Wait for the element and get its HTML
             element = WebDriverWait(browser, 10).until(
