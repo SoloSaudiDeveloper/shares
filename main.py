@@ -5,105 +5,69 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from bs4 import BeautifulSoup
-import re
 
-def process_url(number, browser, xpath):
-    print(f"Processing symbol {number}...")
-    url = f"https://www.tradingview.com/symbols/TADAWUL-{number}/financials-dividends/"
+def process_element(element_html):
+    soup = BeautifulSoup(element_html, 'html.parser')
+    return soup.get_text()
+
+def process_url(browser, url, xpath_template):
+    print(f"Processing URL: {url}")
     browser.get(url)
 
     output_data = []
+    index = 1
 
-    div_index = 0  # Start from 0
     while True:
-        formatted_xpath = xpath.replace('{loop}', str(div_index))
+        current_xpath = xpath_template.format(index)
         try:
-            WebDriverWait(browser, 10).until(
-                EC.presence_of_element_located((By.XPATH, formatted_xpath)))
-            element_html = browser.find_element(By.XPATH, formatted_xpath).get_attribute('outerHTML')
-            process_element(element_html, number, output_data)
-            div_index += 1
-        except Exception:
-            break  # Exit the loop if no element is found or timeout occurs
+            element = WebDriverWait(browser, 10).until(
+                EC.presence_of_element_located((By.XPATH, current_xpath)))
+            element_html = element.get_attribute('outerHTML')
+            output_data.append(process_element(element_html))
+            index += 1
+        except Exception as e:
+            print(f"No more data found for URL at index {index}.")
+            break
 
     return output_data
 
+def main(csv_file_path, output_csv_file_path):
+    # Initialize Selenium WebDriver options
+    chrome_options = Options()
+    chrome_options.add_argument('--no-sandbox')
+    chrome_options.add_argument('--headless')
+    chrome_options.add_argument('--disable-dev-shm-usage')
+    chrome_options.add_argument("--disable-gpu")
 
-def process_element(element_html, number, output_data):
-    soup = BeautifulSoup(element_html, 'html.parser')
-    element_text = soup.get_text()
-    pattern = r'(\d{1,2}/\d{1,2}/\d{4})|(\d+\.\d+)|(\w+)'
-    matches = re.findall(pattern, element_text)
-    flattened_matches = [item for sublist in matches for item in sublist if item]
-    separated_text = ' '.join(flattened_matches)
-    output_data.append([number, separated_text])
+    # Initialize Selenium WebDriver
+    browser = webdriver.Chrome(options=chrome_options)
 
-# Initialize Selenium WebDriver
-chrome_options = Options()
-chrome_options.add_argument('--no-sandbox')
-chrome_options.add_argument('--headless')
-chrome_options.add_argument('--disable-dev-shm-usage')
-chrome_options.add_argument("--disable-gpu")
-browser = webdriver.Chrome(options=chrome_options)
+    data_to_process = []
 
-# Path to the input CSV file
-csv_file_path = 'Symbols.csv'
+    try:
+        with open(csv_file_path, newline='', encoding='utf-8') as csvfile:
+            csv_reader = csv.reader(csvfile)
+            next(csv_reader, None)  # Skip the header
+            data_to_process = [row for row in csv_reader]
+    except FileNotFoundError:
+        print(f"Error: File not found - {csv_file_path}")
+        return
 
-# Path to the output CSV file
+    if not data_to_process:
+        print("No data to process.")
+    else:
+        with open(output_csv_file_path, 'w', newline='', encoding='utf-8') as out_csvfile:
+            csv_writer = csv.writer(out_csvfile)
+            for row in data_to_process:
+                url, xpath_template = row[0], row[1]
+                print(f"Processing: {url}")
+                data = process_url(browser, url, xpath_template)
+                for element_text in data:
+                    csv_writer.writerow([url, element_text])
+
+    browser.quit()
+
+# Replace with your actual file paths
+csv_file_path = 'xpath.csv'
 output_csv_file_path = 'OutputResults.csv'
-
-
-
-
-
-# Read symbols from the CSV file
-print("Reading symbols from the CSV file...")
-symbols = []
-try:
-    with open(csv_file_path, newline='') as csvfile:
-        csv_reader = csv.reader(csvfile)
-        next(csv_reader, None)  # Skip the header if there is one
-        symbols = [row[0] for row in csv_reader]
-    print(f"Symbols loaded: {symbols}")
-except FileNotFoundError:
-    print(f"Error: File not found - {csv_file_path}")
-
-# Read symbols from the CSV file
-print("Reading symbols from the CSV file...")
-symbols = []
-try:
-    with open(csv_file_path, newline='') as csvfile:
-        csv_reader = csv.reader(csvfile)
-        next(csv_reader, None)  # Skip the header if there is one
-        symbols = [row[0] for row in csv_reader]
-    print(f"Symbols loaded: {symbols}")
-except FileNotFoundError:
-    print(f"Error: File not found - {csv_file_path}")
-
-# Read the first XPath from the CSV file
-xpath_file_path = 'xpath.csv'
-primary_xpath = ""
-try:
-    with open(xpath_file_path, newline='') as csvfile:
-        csv_reader = csv.reader(csvfile)
-        primary_xpath = next(csv_reader)[0]  # Get the first row, first column
-    print(f"Primary XPath loaded: {primary_xpath}")
-except FileNotFoundError:
-    print(f"Error: File not found - {xpath_file_path}")
-
-# Check if symbols and primary_xpath were loaded
-if not symbols or not primary_xpath:
-    print("No symbols to process or no primary XPath found.")
-else:
-    # Open the output CSV file for writing
-    with open(output_csv_file_path, 'w', newline='', encoding='utf-8') as out_csvfile:
-        csv_writer = csv.writer(out_csvfile)
-        for number in symbols:
-            print(f"Processing symbol: {number}")
-            data = process_url(number, browser, primary_xpath)
-            if data:
-                for row in data:
-                    print(f"Writing to CSV: {row}")
-                    csv_writer.writerow(row)
-            else:
-                print(f"No data found for symbol: {number}")
+main(csv_file_path, output_csv_file_path)
