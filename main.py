@@ -80,9 +80,11 @@ try:
         csv_reader = csv.reader(csvfile)
         for row in csv_reader:
             xpaths[row[0]] = row[1]
-    print(f"XPaths loaded: {xPaths}")
+print(f"XPaths loaded: {xpaths}")
 except FileNotFoundError:
 print(f"Error: File not found - {xpath_file_path}")
+
+Check if symbols were loaded
 if not symbols:
 print("No symbols to process.")
 else:
