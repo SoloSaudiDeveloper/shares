@@ -84,21 +84,20 @@ try:
 except FileNotFoundError:
     print(f"Error: File not found - {xpath_file_path}")
 
-Check if symbols were loaded
+# Check if symbols were loaded
 if not symbols:
-print("No symbols to process.")
+    print("No symbols to process.")
 else:
-# Open the output CSV file for writing
-with open(output_csv_file_path, 'w', newline='', encoding='utf-8') as out_csvfile:
-csv_writer = csv.writer(out_csvfile)
-for number in symbols:
-print(f"Processing symbol: {number}")
-data = process_url(number, browser, xpaths)
-if data:
-for row in data:
-print(f"Writing to CSV: {row}")
-csv_writer.writerow(row)
-else:
-print(f"No data found for symbol: {number}")
+    # Open the output CSV file for writing
+    with open(output_csv_file_path, 'w', newline='', encoding='utf-8') as out_csvfile:
+        csv_writer = csv.writer(out_csvfile)
+        for number in symbols:
+            print(f"Processing symbol: {number}")
+            data = process_url(number, browser, xpaths)
+            if data:
+                for row in data:
+                    print(f"Writing to CSV: {row}")
+                    csv_writer.writerow(row)
+            else:
+                print(f"No data found for symbol: {number}")
 
-browser.quit()
