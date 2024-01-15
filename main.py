@@ -7,35 +7,27 @@ from selenium.webdriver.support import expected_conditions as EC
 from bs4 import BeautifulSoup
 import re
 
-def process_url(number, browser, xpaths):
+def process_url(number, browser, xpath):
     print(f"Processing symbol {number}...")
     url = f"https://www.tradingview.com/symbols/TADAWUL-{number}/financials-dividends/"
     browser.get(url)
 
     output_data = []
 
-    try:
-        WebDriverWait(browser, 10).until(
-            EC.presence_of_element_located((By.XPATH, xpaths['primary'].format(1))))
-        div_index = 1
-        while True:
-            primary_element_xpath = xpaths['primary'].format(div_index)
-            try:
-                element_html = browser.find_element(
-                    By.XPATH, primary_element_xpath).get_attribute('outerHTML')
-                process_element(element_html, number, output_data)
-                div_index += 1
-            except Exception:
-                break
-    except Exception as e:
+    div_index = 0  # Start from 0
+    while True:
+        formatted_xpath = xpath.replace('{loop}', str(div_index))
         try:
-            element_html = browser.find_element(
-                By.XPATH, xpaths['secondary']).get_attribute('outerHTML')
+            WebDriverWait(browser, 10).until(
+                EC.presence_of_element_located((By.XPATH, formatted_xpath)))
+            element_html = browser.find_element(By.XPATH, formatted_xpath).get_attribute('outerHTML')
             process_element(element_html, number, output_data)
+            div_index += 1
         except Exception:
-            pass
+            break  # Exit the loop if no element is found or timeout occurs
 
     return output_data
+
 
 def process_element(element_html, number, output_data):
     soup = BeautifulSoup(element_html, 'html.parser')
