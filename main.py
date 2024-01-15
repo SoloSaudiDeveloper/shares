@@ -53,7 +53,7 @@ chrome_options.add_argument("--disable-gpu")
 browser = webdriver.Chrome(options=chrome_options)
 
 # Path to the input CSV file
-csv_file_path = 'YourInputCsvFileName.csv'  # Replace with your actual input file name
+csv_file_path = 'xpath.csv'  # Replace with your actual input file name
 
 # Path to the output CSV file
 output_csv_file_path = 'OutputResults.csv'
