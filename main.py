@@ -35,7 +35,7 @@ def process_element(element_html):
     return element_text
 
 # Path to the input CSV file with symbols
-symbols_csv_file_path = 'symbols.csv'
+symbols_csv_file_path = 'Symbols.csv'
 
 # Path to the XPath CSV file
 xpath_csv_file_path = 'xpath.csv'
