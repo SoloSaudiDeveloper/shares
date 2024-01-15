@@ -79,7 +79,8 @@ try:
     with open(xpath_file_path, newline='') as csvfile:
         csv_reader = csv.reader(csvfile)
         for row in csv_reader:
-            xpaths[row[0]] = row[1]
+            if len(row) > 0:  # Check if the row is not empty
+                xpaths[row[0]] = row[0]  # Use the first column for both key and value
     print(f"XPaths loaded: {xpaths}")
 except FileNotFoundError:
     print(f"Error: File not found - {xpath_file_path}")
