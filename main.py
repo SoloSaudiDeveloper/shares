@@ -52,6 +52,10 @@ csv_file_path = 'Symbols.csv'
 # Path to the output CSV file
 output_csv_file_path = 'OutputResults.csv'
 
+
+
+
+
 # Read symbols from the CSV file
 print("Reading symbols from the CSV file...")
 symbols = []
@@ -64,33 +68,42 @@ try:
 except FileNotFoundError:
     print(f"Error: File not found - {csv_file_path}")
 
-# Read the XPaths from the CSV file
+# Read symbols from the CSV file
+print("Reading symbols from the CSV file...")
+symbols = []
+try:
+    with open(csv_file_path, newline='') as csvfile:
+        csv_reader = csv.reader(csvfile)
+        next(csv_reader, None)  # Skip the header if there is one
+        symbols = [row[0] for row in csv_reader]
+    print(f"Symbols loaded: {symbols}")
+except FileNotFoundError:
+    print(f"Error: File not found - {csv_file_path}")
+
+# Read the first XPath from the CSV file
 xpath_file_path = 'xpath.csv'
-xpaths = {}
+primary_xpath = ""
 try:
     with open(xpath_file_path, newline='') as csvfile:
         csv_reader = csv.reader(csvfile)
-        for row in csv_reader:
-            if len(row) > 0:  # Check if the row is not empty
-                xpaths[row[0]] = row[0]  # Use the first column for both key and value
-    print(f"XPaths loaded: {xpaths}")
+        primary_xpath = next(csv_reader)[0]  # Get the first row, first column
+    print(f"Primary XPath loaded: {primary_xpath}")
 except FileNotFoundError:
     print(f"Error: File not found - {xpath_file_path}")
 
-# Check if symbols were loaded
-if not symbols:
-    print("No symbols to process.")
+# Check if symbols and primary_xpath were loaded
+if not symbols or not primary_xpath:
+    print("No symbols to process or no primary XPath found.")
 else:
     # Open the output CSV file for writing
     with open(output_csv_file_path, 'w', newline='', encoding='utf-8') as out_csvfile:
         csv_writer = csv.writer(out_csvfile)
         for number in symbols:
             print(f"Processing symbol: {number}")
-            data = process_url(number, browser, xpaths)
+            data = process_url(number, browser, primary_xpath)
             if data:
                 for row in data:
                     print(f"Writing to CSV: {row}")
                     csv_writer.writerow(row)
             else:
                 print(f"No data found for symbol: {number}")
-
