@@ -7,21 +7,19 @@ from selenium.webdriver.support import expected_conditions as EC
 from bs4 import BeautifulSoup
 import re
 
-def process_url(number, browser):
+def process_url(number, browser, xpaths):
     print(f"Processing symbol {number}...")
     url = f"https://www.tradingview.com/symbols/TADAWUL-{number}/financials-dividends/"
     browser.get(url)
 
-    primary_xpath_base = "//*[@id='js-category-content']/div[2]/div/div/div[8]/div[2]/div/div[1]/div[{}]"
-    secondary_xpath = "//*[@id='js-category-content']/div[2]/div/div/div[3]/div/strong"
-    div_index = 1
     output_data = []
 
     try:
         WebDriverWait(browser, 10).until(
-            EC.presence_of_element_located((By.XPATH, primary_xpath_base.format(1))))
+            EC.presence_of_element_located((By.XPATH, xpaths['primary'].format(1))))
+        div_index = 1
         while True:
-            primary_element_xpath = primary_xpath_base.format(div_index)
+            primary_element_xpath = xpaths['primary'].format(div_index)
             try:
                 element_html = browser.find_element(
                     By.XPATH, primary_element_xpath).get_attribute('outerHTML')
@@ -32,7 +30,7 @@ def process_url(number, browser):
     except Exception as e:
         try:
             element_html = browser.find_element(
-                By.XPATH, secondary_xpath).get_attribute('outerHTML')
+                By.XPATH, xpaths['secondary']).get_attribute('outerHTML')
             process_element(element_html, number, output_data)
         except Exception:
             pass
@@ -74,21 +72,31 @@ try:
 except FileNotFoundError:
     print(f"Error: File not found - {csv_file_path}")
 
-# Check if symbols were loaded
+# Read the XPaths from the CSV file
+xpath_file_path = 'xpath.csv'
+xpaths = {}
+try:
+    with open(xpath_file_path, newline='') as csvfile:
+        csv_reader = csv.reader(csvfile)
+        for row in csv_reader:
+            xpaths[row[0]] = row[1]
+    print(f"XPaths loaded: {xPaths}")
+except FileNotFoundError:
+print(f"Error: File not found - {xpath_file_path}")
 if not symbols:
-    print("No symbols to process.")
+print("No symbols to process.")
 else:
-    # Open the output CSV file for writing
-    with open(output_csv_file_path, 'w', newline='', encoding='utf-8') as out_csvfile:
-        csv_writer = csv.writer(out_csvfile)
-        for number in symbols:
-            print(f"Processing symbol: {number}")
-            data = process_url(number, browser)
-            if data:
-                for row in data:
-                    print(f"Writing to CSV: {row}")
-                    csv_writer.writerow(row)
-            else:
-                print(f"No data found for symbol: {number}")
+# Open the output CSV file for writing
+with open(output_csv_file_path, 'w', newline='', encoding='utf-8') as out_csvfile:
+csv_writer = csv.writer(out_csvfile)
+for number in symbols:
+print(f"Processing symbol: {number}")
+data = process_url(number, browser, xpaths)
+if data:
+for row in data:
+print(f"Writing to CSV: {row}")
+csv_writer.writerow(row)
+else:
+print(f"No data found for symbol: {number}")
 
 browser.quit()
