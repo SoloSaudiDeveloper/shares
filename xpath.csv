@@ -1,3 +1,2 @@
-website,xpath,format_info,comments
 https://www.tradingview.com/symbols/TADAWUL-{number}/financials-dividends/,//*[@id='js-category-content']/div[2]/div/div/div[8]/div[2]/div/div[1]/div[{}],"r'\d{1,2}/\d{1,2}/\d{4}|\d+\.\d+|\w+'",Dividend payout history
 https://www.tradingview.com/symbols/TADAWUL-{number}/financials-dividends/,"//*[@id=""js-category-content""]/div[2]/div/div/div[2]/div/div","r'\d{1,2}/\d{1,2}/\d{4}|\d+\.\d+|\w+'",this is for dividends overview text
