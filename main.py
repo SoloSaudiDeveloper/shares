@@ -89,20 +89,25 @@ if not symbols or not xpath_template:
     print("No symbols or XPath template to process.")
     browser.quit()
 else:
+   # Check if symbols and XPath template were loaded
+if not symbols or not xpaths_info:
+    print("No symbols or XPath info to process.")
+    browser.quit()
+else:
     # Open the output CSV file for writing
     with open(output_csv_file_path, 'w', newline='', encoding='utf-8') as out_csvfile:
         csv_writer = csv.writer(out_csvfile)
-        # Process each symbol with the XPath template
-       for symbol in symbols:
-    for website_template, xpath_template, format_info in xpaths_info:
-        data = process_url(browser, symbol, website_template, xpath_template)
-        if data:
-            for element_text in data:
-                formatted_data = process_element(element_text, format_info)
-                csv_writer.writerow([symbol] + formatted_data)
-                print(f"Data written for symbol {symbol}: {formatted_data}")
-        else:
-            print(f"No data found for symbol {symbol} with {xpath_template}")
+        # Process each symbol with each XPath template
+        for symbol in symbols:
+            for website_template, xpath_template, format_info in xpaths_info:
+                data = process_url(browser, symbol, website_template, xpath_template)
+                if data:
+                    for element_text in data:
+                        formatted_data = process_element(element_text, format_info)
+                        csv_writer.writerow([symbol] + formatted_data)
+                        print(f"Data written for symbol {symbol}: {formatted_data}")
+                else:
+                    print(f"No data found for symbol {symbol} with {xpath_template}")
 
 # Close the browser after all symbols have been processed
 browser.quit()
