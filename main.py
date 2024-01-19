@@ -31,19 +31,10 @@ def process_url(browser, symbol, website_template, xpath_template):
 
     return output_data
 
-def process_element(element_html, format_info):
+def process_element(element_html):
     soup = BeautifulSoup(element_html, 'html.parser')
     element_text = soup.get_text()
-
-    # Check if format_info is provided
-    if format_info:
-        # Assuming format_info is a regular expression pattern
-        formatted_data = re.findall(format_info, element_text)
-        return formatted_data
-    else:
-        # If no format_info is provided, return the text as is or with basic processing
-        # Here, it's returned as a list with a single element
-        return [element_text]
+    return element_text
 
 
 # Path to the input CSV file with symbols
