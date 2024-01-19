@@ -1,4 +1,5 @@
 import csv
+import re  # Make sure to import re for regular expressions
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
@@ -31,10 +32,19 @@ def process_url(browser, symbol, website_template, xpath_template):
 
     return output_data
 
-def process_element(element_html):
+def process_element(element_html, format_info):
     soup = BeautifulSoup(element_html, 'html.parser')
     element_text = soup.get_text()
-    return element_text
+
+    # Check if format_info is provided
+    if format_info:
+        # Assuming format_info is a regular expression pattern
+        formatted_data = re.findall(format_info, element_text)
+        return formatted_data
+    else:
+        # If no format_info is provided, return the text as is or with basic processing
+        # Here, it's returned as a list with a single element
+        return [element_text]
 
 
 # Path to the input CSV file with symbols
