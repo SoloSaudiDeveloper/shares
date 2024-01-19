@@ -31,10 +31,13 @@ def process_url(browser, symbol, website_template, xpath_template):
 
     return output_data
 
-def process_element(element_html):
+def process_element(element_html, format_info):
     soup = BeautifulSoup(element_html, 'html.parser')
     element_text = soup.get_text()
-    return element_text
+
+    # Assuming format_info is a regular expression pattern
+    formatted_data = re.findall(format_info, element_text)
+    return formatted_data
 
 # Path to the input CSV file with symbols
 symbols_csv_file_path = 'Symbols.csv'
@@ -68,13 +71,15 @@ except FileNotFoundError:
     print(f"Error: File not found - {symbols_csv_file_path}")
     browser.quit()
 
-# Read the XPath template from the CSV file
+# Read the XPath CSV file
+xpaths_info = []  # List to store website template, xpath template, and formatting info
 try:
     with open(xpath_csv_file_path, newline='', encoding='utf-8') as csvfile:
         csv_reader = csv.reader(csvfile)
-        website_template, xpath_template, _ = next(csv_reader)
-    print(f"Website template loaded: {website_template}")
-    print(f"XPath template loaded: {xpath_template}")
+        next(csv_reader)  # Skip the header row
+        for row in csv_reader:
+            xpaths_info.append(row[:3])  # First three columns: website, xpath, formatting
+    print(f"XPath info loaded: {xpaths_info}")
 except FileNotFoundError:
     print(f"Error: File not found - {xpath_csv_file_path}")
     browser.quit()
@@ -88,14 +93,16 @@ else:
     with open(output_csv_file_path, 'w', newline='', encoding='utf-8') as out_csvfile:
         csv_writer = csv.writer(out_csvfile)
         # Process each symbol with the XPath template
-        for symbol in symbols:
-            data = process_url(browser, symbol, website_template, xpath_template)
-            if data:
-                for element_text in data:
-                    csv_writer.writerow([symbol, element_text])
-                    print(f"Data written for symbol {symbol}: {element_text}")
-            else:
-                print(f"No data found for symbol {symbol}")
+       for symbol in symbols:
+    for website_template, xpath_template, format_info in xpaths_info:
+        data = process_url(browser, symbol, website_template, xpath_template)
+        if data:
+            for element_text in data:
+                formatted_data = process_element(element_text, format_info)
+                csv_writer.writerow([symbol] + formatted_data)
+                print(f"Data written for symbol {symbol}: {formatted_data}")
+        else:
+            print(f"No data found for symbol {symbol} with {xpath_template}")
 
 # Close the browser after all symbols have been processed
 browser.quit()
