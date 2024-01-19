@@ -4,7 +4,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.common.exceptions import NoSuchElementException
+from selenium.common.exceptions import NoSuchElementException, TimeoutException
 
 def process_url(browser, symbol):
     print(f"Processing symbol {symbol}...")
@@ -16,31 +16,35 @@ def process_url(browser, symbol):
 
     try:
         # Wait for the specific element on the page to ensure the page has loaded
-        WebDriverWait(browser, 20).until(
-            EC.presence_of_element_located((By.XPATH, "//*[@id='js-category-content']/div[2]/div/div/div[8]/div[2]/div/div[1]/div[1]/div[2]")))
+        known_element_xpath = "//*[@id='js-category-content']/div[2]/div/div/div[8]/div[2]/div/div[1]/div[1]/div[2]"
+        WebDriverWait(browser, 20).until(EC.presence_of_element_located((By.XPATH, known_element_xpath)))
 
         while True:
             row_data = []
             for col_index in range(1, 6):  # Loop through columns 1 to 5
                 current_xpath = f"//*[@id='js-category-content']/div[2]/div/div/div[8]/div[2]/div/div[1]/div[{row_index}]/div[{col_index}]"
                 try:
-                    element = WebDriverWait(browser, 10).until(
-                        EC.presence_of_element_located((By.XPATH, current_xpath)))
+                    element = WebDriverWait(browser, 10).until(EC.presence_of_element_located((By.XPATH, current_xpath)))
                     row_data.append(element.text)
                 except TimeoutException:
                     # If we time out waiting for a column, assume no more data in this row
+                    print(f"Timed out waiting for column {col_index} of row {row_index}.")
                     break
 
             if not row_data:
                 # If we found no data in this row, assume there are no more rows
+                print(f"No more data found for symbol {symbol} starting at row {row_index}.")
                 break
             output_data.append(row_data)
             row_index += 1
 
     except TimeoutException:
-        print(f"Page did not load or element was not found for symbol {symbol}")
+        print(f"Page did not load or known element was not found for symbol {symbol}")
 
     return output_data
+
+# Rest of your code should follow here, including initialization and CSV reading/writing.
+
 # Path to the input CSV file with symbols
 symbols_csv_file_path = 'Symbols.csv'
 
