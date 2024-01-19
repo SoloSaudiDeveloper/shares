@@ -84,12 +84,7 @@ except FileNotFoundError:
     print(f"Error: File not found - {xpath_csv_file_path}")
     browser.quit()
 
-# Check if symbols and XPath template were loaded
-if not symbols or not xpath_template:
-    print("No symbols or XPath template to process.")
-    browser.quit()
-else:
-   # Check if symbols and XPath template were loaded
+# Check if symbols and XPath info were loaded
 if not symbols or not xpaths_info:
     print("No symbols or XPath info to process.")
     browser.quit()
