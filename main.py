@@ -7,29 +7,35 @@ from selenium.webdriver.support import expected_conditions as EC
 from bs4 import BeautifulSoup
 import re
 
-def process_url(browser, symbol, xpath_template):
+from selenium.common.exceptions import NoSuchElementException
+
+def process_url(browser, symbol):
     print(f"Processing symbol {symbol}...")
     url = f"https://www.tradingview.com/symbols/TADAWUL-{symbol}/financials-dividends/"
     browser.get(url)
 
     output_data = []
-    index = 1  # Start the index at 1
+    row_index = 1  # Start the row index at 1
 
     while True:
-        # Replace the index placeholder with the current index
-        current_xpath = xpath_template.format(index)
-        try:
-            # Wait for the element and get its HTML
-            element = WebDriverWait(browser, 10).until(
-                EC.presence_of_element_located((By.XPATH, current_xpath)))
-            element_html = element.get_attribute('outerHTML')
-            output_data.append(process_element(element_html))
-            index += 1
-        except Exception as e:
-            print(f"No more data found for symbol {symbol} at index {index}.")
-            break
+        row_data = []
+        for col_index in range(1, 6):  # Loop through columns 1 to 5
+            current_xpath = f"//*[@id='js-category-content']/div[2]/div/div/div[8]/div[2]/div/div[1]/div[{row_index}]/div[{col_index}]"
+            try:
+                element = browser.find_element_by_xpath(current_xpath)
+                row_data.append(element.text)
+            except NoSuchElementException:
+                print(f"No more data found for symbol {symbol} at row {row_index}.")
+                break  # Exit the column loop if an element is not found
+
+        if row_data:  # Check if any data was added for the row
+            output_data.append(row_data)
+            row_index += 1
+        else:
+            break  # Exit the row loop if no data was found for the current row
 
     return output_data
+
 
 def process_element(element_html):
     soup = BeautifulSoup(element_html, 'html.parser')
