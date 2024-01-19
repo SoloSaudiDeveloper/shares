@@ -14,23 +14,29 @@ def process_url(browser, symbol):
     output_data = []
     row_index = 1  # Start the row index at 1
 
-    while True:
-        row_data = []
-        for col_index in range(1, 6):  # Loop through columns 1 to 5
-            current_xpath = f"//*[@id='js-category-content']/div[2]/div/div/div[8]/div[2]/div/div[1]/div[{row_index}]/div[{col_index}]"
-            try:
-                element = WebDriverWait(browser, 10).until(
-                    EC.presence_of_element_located((By.XPATH, current_xpath)))
-                row_data.append(element.text)
-            except NoSuchElementException:
-                print(f"No more data found for symbol {symbol} at row {row_index}.")
-                break  # Exit the column loop if an element is not found
+    try:
+        # Wait for some known element on the page to ensure the page has loaded
+        WebDriverWait(browser, 20).until(
+            EC.presence_of_element_located((By.XPATH, "Known element XPath")))
 
-        if row_data:  # Check if any data was added for the row
-            output_data.append(row_data)
-            row_index += 1
-        else:
-            break  # Exit the row loop if no data was found for the current row
+        while True:
+            row_data = []
+            for col_index in range(1, 6):  # Loop through columns 1 to 5
+                current_xpath = f"//*[@id='js-category-content']/div[2]/div/div/div[8]/div[2]/div/div[1]/div[{row_index}]/div[{col_index}]"
+                try:
+                    element = browser.find_element_by_xpath(current_xpath)
+                    row_data.append(element.text)
+                except NoSuchElementException:
+                    print(f"No more data found for symbol {symbol} at row {row_index}.")
+                    break  # Exit the column loop if an element is not found
+
+            if row_data:  # Check if any data was added for the row
+                output_data.append(row_data)
+                row_index += 1
+            else:
+                break  # Exit the row loop if no data was found for the current row
+    except TimeoutException:
+        print(f"Page did not load or element was not found for symbol {symbol}")
 
     return output_data
 
