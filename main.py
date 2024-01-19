@@ -35,9 +35,16 @@ def process_element(element_html, format_info):
     soup = BeautifulSoup(element_html, 'html.parser')
     element_text = soup.get_text()
 
-    # Assuming format_info is a regular expression pattern
-    formatted_data = re.findall(format_info, element_text)
-    return formatted_data
+    # Check if format_info is provided
+    if format_info:
+        # Assuming format_info is a regular expression pattern
+        formatted_data = re.findall(format_info, element_text)
+        return formatted_data
+    else:
+        # If no format_info is provided, return the text as is or with basic processing
+        # Here, it's returned as a list with a single element
+        return [element_text]
+
 
 # Path to the input CSV file with symbols
 symbols_csv_file_path = 'Symbols.csv'
