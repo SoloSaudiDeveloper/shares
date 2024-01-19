@@ -16,20 +16,30 @@ def process_url(browser, symbol, website_template, xpath_template, format_info):
     output_data = []
     index = 1
 
-    while True:
-        current_xpath = xpath_template.format(index)
-        print(f"Debug: Formatted XPath for symbol {symbol} at index {index}: {current_xpath}")
+    if '{}' in xpath_template:  # Check if the XPath template has a curly bracket
+        while True:
+            current_xpath = xpath_template.format(index)
+            print(f"Debug: Formatted XPath for symbol {symbol} at index {index}: {current_xpath}")
+            try:
+                element = WebDriverWait(browser, 10).until(
+                    EC.presence_of_element_located((By.XPATH, current_xpath)))
+                element_html = element.get_attribute('outerHTML')
+                output_data.append(process_element(element_html, format_info))
+                index += 1
+            except Exception as e:
+                print(f"Exception caught for symbol {symbol} at index {index}: {e}")
+                break
+    else:
         try:
             element = WebDriverWait(browser, 10).until(
-                EC.presence_of_element_located((By.XPATH, current_xpath)))
+                EC.presence_of_element_located((By.XPATH, xpath_template)))
             element_html = element.get_attribute('outerHTML')
             output_data.append(process_element(element_html, format_info))
-            index += 1
         except Exception as e:
-            print(f"Exception caught for symbol {symbol} at index {index}: {e}")
-            break
+            print(f"Exception caught for symbol {symbol}: {e}")
 
     return output_data
+
 
 def process_element(element_html, format_info):
     soup = BeautifulSoup(element_html, 'html.parser')
