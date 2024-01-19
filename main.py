@@ -10,24 +10,23 @@ from bs4 import BeautifulSoup
 def process_url(browser, symbol, website_template, xpath_template):
     print(f"Processing symbol {symbol}...")
     formatted_website_url = website_template.format(number=symbol)
-    print(f"Debug: Formatted website URL for symbol {symbol}: {formatted_website_url}")  # Debug info
+    print(f"Debug: Formatted website URL for symbol {symbol}: {formatted_website_url}")
     browser.get(formatted_website_url)
 
     output_data = []
-    index = 1  # Start the index at 1
+    index = 1
 
     while True:
-        current_xpath = xpath_template.format(index)  # Assuming positional argument for loop index
-        print(f"Debug: Formatted XPath for symbol {symbol} at index {index}: {current_xpath}")  # Debug info
+        current_xpath = xpath_template.format(index)
+        print(f"Debug: Formatted XPath for symbol {symbol} at index {index}: {current_xpath}")
         try:
-            # Wait for the element and get its HTML
             element = WebDriverWait(browser, 10).until(
                 EC.presence_of_element_located((By.XPATH, current_xpath)))
             element_html = element.get_attribute('outerHTML')
             output_data.append(process_element(element_html))
             index += 1
         except Exception as e:
-            print(f"No more data found for symbol {symbol} at index {index}.")
+            print(f"Exception caught for symbol {symbol} at index {index}: {e}")
             break
 
     return output_data
@@ -35,15 +34,17 @@ def process_url(browser, symbol, website_template, xpath_template):
 def process_element(element_html, format_info):
     soup = BeautifulSoup(element_html, 'html.parser')
     element_text = soup.get_text()
+    print(f"Debug: Raw Element Text: {element_text}")
 
-    # Check if format_info is provided
     if format_info:
-        # Assuming format_info is a regular expression pattern
-        formatted_data = re.findall(format_info, element_text)
-        return formatted_data
+        try:
+            formatted_data = re.findall(format_info, element_text)
+            print(f"Debug: Formatted Data: {formatted_data}")
+            return formatted_data
+        except Exception as e:
+            print(f"Regex formatting error: {e}")
+            return [element_text]  # Fallback to raw text
     else:
-        # If no format_info is provided, return the text as is or with basic processing
-        # Here, it's returned as a list with a single element
         return [element_text]
 
 
@@ -101,16 +102,17 @@ else:
     with open(output_csv_file_path, 'w', newline='', encoding='utf-8') as out_csvfile:
         csv_writer = csv.writer(out_csvfile)
         # Process each symbol with each XPath template
-        for symbol in symbols:
-            for website_template, xpath_template, format_info in xpaths_info:
-                data = process_url(browser, symbol, website_template, xpath_template)
-                if data:
-                    for element_text in data:
-                        formatted_data = process_element(element_text, format_info)
-                        csv_writer.writerow([symbol] + formatted_data)
-                        print(f"Data written for symbol {symbol}: {formatted_data}")
-                else:
-                    print(f"No data found for symbol {symbol} with {xpath_template}")
+for symbol in symbols:
+    for website_template, xpath_template, format_info in xpaths_info:
+        print(f"Debug: Processing with Website: {website_template}, XPath: {xpath_template}, Format: {format_info}")
+        data = process_url(browser, symbol, website_template, xpath_template)
+        if data:
+            for element_text in data:
+                formatted_data = process_element(element_text, format_info)
+                csv_writer.writerow([symbol] + formatted_data)
+                print(f"Data written for symbol {symbol}: {formatted_data}")
+        else:
+            print(f"No data found for symbol {symbol} with {xpath_template}")
 
 # Close the browser after all symbols have been processed
 browser.quit()
