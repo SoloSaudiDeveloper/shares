@@ -15,31 +15,32 @@ def process_url(browser, symbol):
     row_index = 1  # Start the row index at 1
 
     try:
-        # Wait for some known element on the page to ensure the page has loaded
+        # Wait for the specific element on the page to ensure the page has loaded
         WebDriverWait(browser, 20).until(
-            EC.presence_of_element_located((By.XPATH, "Known element XPath")))
+            EC.presence_of_element_located((By.XPATH, "//*[@id='js-category-content']/div[2]/div/div/div[8]/div[2]/div/div[1]/div[1]/div[2]")))
 
         while True:
             row_data = []
             for col_index in range(1, 6):  # Loop through columns 1 to 5
                 current_xpath = f"//*[@id='js-category-content']/div[2]/div/div/div[8]/div[2]/div/div[1]/div[{row_index}]/div[{col_index}]"
                 try:
-                    element = browser.find_element_by_xpath(current_xpath)
+                    element = WebDriverWait(browser, 10).until(
+                        EC.presence_of_element_located((By.XPATH, current_xpath)))
                     row_data.append(element.text)
-                except NoSuchElementException:
-                    print(f"No more data found for symbol {symbol} at row {row_index}.")
-                    break  # Exit the column loop if an element is not found
+                except TimeoutException:
+                    # If we time out waiting for a column, assume no more data in this row
+                    break
 
-            if row_data:  # Check if any data was added for the row
-                output_data.append(row_data)
-                row_index += 1
-            else:
-                break  # Exit the row loop if no data was found for the current row
+            if not row_data:
+                # If we found no data in this row, assume there are no more rows
+                break
+            output_data.append(row_data)
+            row_index += 1
+
     except TimeoutException:
         print(f"Page did not load or element was not found for symbol {symbol}")
 
     return output_data
-
 # Path to the input CSV file with symbols
 symbols_csv_file_path = 'Symbols.csv'
 
