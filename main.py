@@ -34,8 +34,7 @@ def process_url(browser, symbol, website_template, xpath_template):
 def process_element(element_html):
     soup = BeautifulSoup(element_html, 'html.parser')
     element_text = soup.get_text()
-    # Split the text into a list based on spaces
-    return element_text.split()
+    return element_text
 
 # Path to the input CSV file with symbols
 symbols_csv_file_path = 'Symbols.csv'
