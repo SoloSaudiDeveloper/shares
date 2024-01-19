@@ -17,7 +17,7 @@ def process_url(browser, symbol, xpath_template):
 
     while True:
         # Replace the index placeholder with the current index
-        current_xpath = xpath_template.format(loop=index)
+        current_xpath = xpath_template.format(index)
         try:
             # Wait for the element and get its HTML
             element = WebDriverWait(browser, 10).until(
