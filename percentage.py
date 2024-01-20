@@ -61,6 +61,7 @@ xpaths_list = [
     # Row 1 XPaths
           [
         '//*[@id="js-category-content"]/div[1]/div[1]/div/div/div/h2',
+              
         '//*[@id="js-category-content"]/div[2]/div/div/div[5]/div[2]/div/div[1]/div[1]/div[4]/div[1]',
         '//*[@id="js-category-content"]/div[2]/div/div/div[5]/div[2]/div/div[1]/div[1]/div[4]/div[2]',
         '//*[@id="js-category-content"]/div[2]/div/div/div[5]/div[2]/div/div[1]/div[1]/div[4]/div[3]',
@@ -102,15 +103,16 @@ xpaths_list = [
     ],
     # Fourth row XPaths
     [
-        '//*[@id="js-category-content"]/div[2]/div/div/div[5]/div[2]/div/div[1]/div[4]/div[3]/div[1]',
         '//*[@id="js-category-content"]/div[2]/div/div/div[5]/div[2]/div/div[1]/div[4]/div[3]/div[2]',
+        '//*[@id="js-category-content"]/div[2]/div/div/div[5]/div[2]/div/div[1]/div[4]/div[5]/div[1]',
+        '//*[@id="js-category-content"]/div[2]/div/div/div[5]/div[2]/div/div[1]/div[4]/div[5]/div[3]',
         '//*[@id="js-category-content"]/div[2]/div/div/div[5]/div[2]/div/div[1]/div[4]/div[5]/div[3]',
         '//*[@id="js-category-content"]/div[2]/div/div/div[5]/div[2]/div/div[1]/div[4]/div[5]/div[4]',
         '//*[@id="js-category-content"]/div[2]/div/div/div[5]/div[2]/div/div[1]/div[4]/div[5]/div[5]',
         '//*[@id="js-category-content"]/div[2]/div/div/div[5]/div[2]/div/div[1]/div[4]/div[5]/div[6]',
         '//*[@id="js-category-content"]/div[2]/div/div/div[5]/div[2]/div/div[1]/div[4]/div[5]/div[7]',
 
-      
+      //*[@id="js-category-content"]/div[2]/div/div/div[5]/div[2]/div/div[1]/div[4]/div[5]/div[1]
         
         # ... other XPaths for the fourth row
     ]
