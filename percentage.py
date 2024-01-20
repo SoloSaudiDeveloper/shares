@@ -6,22 +6,28 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException
 
-# Function to process each URL with dynamic XPaths
+# Hardcoded XPaths based on the provided Excel file
+BASE_URL = "https://www.tradingview.com/symbols/TADAWUL-{symbol}/"
+XPATHS = [
+    "//*[@id='js-category-content']/div[2]/div/div/div[5]/div[2]/div/div[1]/div[1]/div[3]/div[2]",
+    "//*[@id='js-category-content']/div[2]/div/div/div[5]/div[2]/div/div[1]/div[1]/div[4]/div[3]",
+    # Add additional XPaths here based on the Excel file
+]
+
+# Function to process each URL with the given XPaths
 def process_url_dynamic(browser, symbol):
     print(f"Processing symbol {symbol}...")
-    url = f"https://www.tradingview.com/symbols/TADAWUL-{symbol}/"  # Example URL
+    url = BASE_URL.format(symbol=symbol)
     browser.get(url)
 
     output_data = []
 
     try:
-        # Wait for a known element that will be on the page once it's fully loaded
-        wait_xpath = "//*[@id='js-category-content']/div[2]/div/div/div[5]/div[2]/div/div[1]/div[1]/div[3]/div[2]"
-        WebDriverWait(browser, 20).until(EC.presence_of_element_located((By.XPATH, wait_xpath)))
+        # Wait for the page to load by checking for the presence of the first element
+        WebDriverWait(browser, 20).until(EC.presence_of_element_located((By.XPATH, XPATHS[0])))
 
-        # Dynamically generate and process XPaths
-        for i in range(3, 8):  # Adjust the range according to the number of columns
-            xpath = f"//*[@id='js-category-content']/div[2]/div/div/div[5]/div[2]/div/div[1]/div[1]/div[4]/div[{i}]"
+        # Extract data using the provided XPaths
+        for xpath in XPATHS:
             try:
                 element = WebDriverWait(browser, 10).until(EC.presence_of_element_located((By.XPATH, xpath)))
                 output_data.append(element.text)
@@ -67,7 +73,7 @@ else:
     with open(output_csv_file_path, 'w', newline='', encoding='utf-8') as out_csvfile:
         csv_writer = csv.writer(out_csvfile)
         # Write header row
-        csv_writer.writerow(['Symbol', 'Data 1', 'Data 2', 'Data 3', 'Data 4', 'Data 5'])
+        csv_writer.writerow(['Symbol'] + [f'Data {i + 1}' for i in range(len(XPATHS))])
 
         # Process each symbol
         for symbol in symbols:
