@@ -19,14 +19,14 @@ def process_url_dynamic(browser, symbol, xpaths_list):
     output_data = []
 
     # Wait for the page to load using the first XPath as an indicator
-    WebDriverWait(browser, 20).until(EC.presence_of_element_located((By.XPATH, xpaths_list[0][0])))
+    WebDriverWait(browser, 5).until(EC.presence_of_element_located((By.XPATH, xpaths_list[0][0])))
 
     # Process each row of XPaths
     for xpaths in xpaths_list:
         row_data = []  # Initialize an empty list for row data
         for xpath in xpaths:
             try:
-                element = WebDriverWait(browser, 10).until(EC.presence_of_element_located((By.XPATH, xpath)))
+                element = WebDriverWait(browser, 3).until(EC.presence_of_element_located((By.XPATH, xpath)))
                 sanitized_text = sanitize(element.text)  # Sanitize the text before appending
                 row_data.append(sanitized_text)
             except TimeoutException:
@@ -67,6 +67,8 @@ xpaths_list = [
     # Row 1 XPaths
       [
         '//*[@id="js-category-content"]/div[1]/div[1]/div/div/div/h2',
+        '//*[@id="js-category-content"]/div[2]/div/div/div[5]/div[2]/div/div[1]/div[1]/div[4]/div[1]',
+        '//*[@id="js-category-content"]/div[2]/div/div/div[5]/div[2]/div/div[1]/div[1]/div[4]/div[2]',
         '//*[@id="js-category-content"]/div[2]/div/div/div[5]/div[2]/div/div[1]/div[1]/div[4]/div[3]',
         '//*[@id="js-category-content"]/div[2]/div/div/div[5]/div[2]/div/div[1]/div[1]/div[4]/div[4]',
         '//*[@id="js-category-content"]/div[2]/div/div/div[5]/div[2]/div/div[1]/div[1]/div[4]/div[5]',
@@ -79,6 +81,8 @@ xpaths_list = [
     # Second row XPaths
     [
         '//*[@id="js-category-content"]/div[2]/div/div/div[5]/div[2]/div/div[1]/div[2]/div[3]/div[2]',
+        '//*[@id="js-category-content"]/div[2]/div/div/div[5]/div[2]/div/div[1]/div[2]/div[5]/div[1]',
+        '//*[@id="js-category-content"]/div[2]/div/div/div[5]/div[2]/div/div[1]/div[2]/div[5]/div[2]',
         '//*[@id="js-category-content"]/div[2]/div/div/div[5]/div[2]/div/div[1]/div[2]/div[5]/div[3]',
         '//*[@id="js-category-content"]/div[2]/div/div/div[5]/div[2]/div/div[1]/div[2]/div[5]/div[4]',
         '//*[@id="js-category-content"]/div[2]/div/div/div[5]/div[2]/div/div[1]/div[2]/div[5]/div[5]',
@@ -90,6 +94,8 @@ xpaths_list = [
     [
         
         '//*[@id="js-category-content"]/div[2]/div/div/div[5]/div[2]/div/div[1]/div[3]/div[3]/div[2]',
+        '//*[@id="js-category-content"]/div[2]/div/div/div[5]/div[2]/div/div[1]/div[3]/div[5]/div[1]',
+        '//*[@id="js-category-content"]/div[2]/div/div/div[5]/div[2]/div/div[1]/div[3]/div[5]/div[2]',
         '//*[@id="js-category-content"]/div[2]/div/div/div[5]/div[2]/div/div[1]/div[3]/div[5]/div[3]',
         '//*[@id="js-category-content"]/div[2]/div/div/div[5]/div[2]/div/div[1]/div[3]/div[5]/div[4]',
         '//*[@id="js-category-content"]/div[2]/div/div/div[5]/div[2]/div/div[1]/div[3]/div[5]/div[5]',
@@ -102,6 +108,7 @@ xpaths_list = [
     ],
     # Fourth row XPaths
     [
+        '//*[@id="js-category-content"]/div[2]/div/div/div[5]/div[2]/div/div[1]/div[4]/div[3]/div[1]',
         '//*[@id="js-category-content"]/div[2]/div/div/div[5]/div[2]/div/div[1]/div[4]/div[3]/div[2]',
         '//*[@id="js-category-content"]/div[2]/div/div/div[5]/div[2]/div/div[1]/div[4]/div[5]/div[3]',
         '//*[@id="js-category-content"]/div[2]/div/div/div[5]/div[2]/div/div[1]/div[4]/div[5]/div[4]',
