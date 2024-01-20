@@ -58,11 +58,10 @@ except FileNotFoundError:
 
 # Hardcoded XPaths for each symbol, grouped by the layout row
 xpaths_list = [
-    # First row XPaths
+    # Row 1 XPaths
     [
         '//*[@id="js-category-content"]/div[1]/div[1]/div/div/div/h2',
-        '//*[@id="js-category-content"]/div[2]/div/div/div[5]/div[2]/div/div[1]/div[1]/div[4]/div[3]',
-        # ... other XPaths for the first row
+        # ... other XPaths for row 1
     ],
     # Second row XPaths
     [
@@ -79,6 +78,7 @@ xpaths_list = [
         '//*[@id="js-category-content"]/div[2]/div/div/div[5]/div[2]/div/div[1]/div[4]/div[3]/div[2]',
         # ... other XPaths for the fourth row
     ]
+    # ... other rows of XPaths
 ]
 
 # Check if symbols were loaded
@@ -86,29 +86,29 @@ if not symbols:
     print("No symbols to process.")
     browser.quit()
 else:
-# Open the output CSV file for writing
-with open(output_csv_file_path, 'w', newline='', encoding='utf-8') as out_csvfile:
-    csv_writer = csv.writer(out_csvfile)
-    
-    # Write header row based on the number of columns in the XPaths list
-    header = ['Symbol']
-    for i in range(len(xpaths_list[0])):
-        header.extend([f'Row1Col{i+1}'])
-    csv_writer.writerow(header)
-    
-    # Additionally write headers for other rows
-    for row_index in range(1, len(xpaths_list)):
-        header = ['']
-        for i in range(len(xpaths_list[row_index])):
-            header.extend([f'Row{row_index+1}Col{i+1}'])
+    # Open the output CSV file for writing
+    with open(output_csv_file_path, 'w', newline='', encoding='utf-8') as out_csvfile:
+        csv_writer = csv.writer(out_csvfile)
+        
+        # Write header row based on the number of columns in the XPaths list
+        header = ['Symbol']
+        for i in range(len(xpaths_list[0])):
+            header.extend([f'Row1Col{i+1}'])
         csv_writer.writerow(header)
-    
-    # Process each symbol
-    for symbol in symbols:
-        data = process_url_dynamic(browser, symbol, xpaths_list)
-        for row_data in data:
-            csv_writer.writerow(row_data)
-        print(f"Data written for symbol {symbol}")
+        
+        # Additionally write headers for other rows
+        for row_index in range(1, len(xpaths_list)):
+            header = ['']
+            for i in range(len(xpaths_list[row_index])):
+                header.extend([f'Row{row_index+1}Col{i+1}'])
+            csv_writer.writerow(header)
+        
+        # Process each symbol
+        for symbol in symbols:
+            data = process_url_dynamic(browser, symbol, xpaths_list)
+            for row_data in data:
+                csv_writer.writerow(row_data)
+            print(f"Data written for symbol {symbol}")
 
 # Close the browser after all symbols have been processed
 browser.quit()
