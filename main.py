@@ -6,35 +6,37 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import NoSuchElementException, TimeoutException
 
-
-
+# Define the process_url function
 def process_url(browser, symbol):
     print(f"Processing symbol {symbol}...")
     url = f"https://www.tradingview.com/symbols/TADAWUL-{symbol}/financials-dividends/"
     browser.get(url)
 
     output_data = []
+    row_index = 1  # Start the row index at 1
 
     try:
-        # Wait for the page to load
+        # Wait for a known element that will be on the page once it's fully loaded
         WebDriverWait(browser, 20).until(EC.presence_of_element_located((By.XPATH, "//*[@id='js-category-content']/div[2]/div/div/div[8]/div[2]/div/div[1]/div[1]/div[2]")))
 
-        # Check for the special XPath
-        special_xpath = "//*[@id='js-category-content']/div[2]/div/div/div[3]/div/div[2]"
+        # Check for the specific XPath
+        specific_xpath = "//*[@id='js-category-content']/div[2]/div/div/div[3]/div/div[2]"
         try:
-            special_element = browser.find_element(By.XPATH, special_xpath)
-            special_text = special_element.text
-            output_data.append([symbol, special_text])  # Add the special text to output
-            output_data.append([symbol, "Special Data", "N/A", "N/A", "N/A", "N/A", "N/A"])  # Placeholder for consistent format
-            return output_data
+            browser.find_element(By.XPATH, specific_xpath)
         except NoSuchElementException:
-            pass  # If special XPath does not exist, continue with normal processing
+            print(f"Specific XPath not found for symbol {symbol}, moving to next symbol.")
+            return []
 
-        # Normal data extraction process
-        row_index = 1
+        # Extract text from the single-use XPath
+        single_use_xpath = "//*[@id='js-category-content']/div[2]/div/div/div[2]/div/div/p"
+        single_use_element = WebDriverWait(browser, 10).until(EC.presence_of_element_located((By.XPATH, single_use_xpath)))
+        single_use_text = single_use_element.text
+        output_data.append([symbol, single_use_text])  # Add to the output
+
+        # Now proceed with the rest of the data extraction for the table
         while True:
             row_data = []
-            for col_index in range(1, 6):
+            for col_index in range(1, 6):  # Loop through columns 1 to 5
                 current_xpath = f"//*[@id='js-category-content']/div[2]/div/div/div[8]/div[2]/div/div[1]/div[{row_index}]/div[{col_index}]"
                 try:
                     element = WebDriverWait(browser, 10).until(EC.presence_of_element_located((By.XPATH, current_xpath)))
@@ -46,8 +48,7 @@ def process_url(browser, symbol):
             if not row_data:
                 print(f"No more data found for symbol {symbol} starting at row {row_index}.")
                 break
-            output_data.insert(0, [symbol, "Regular Data"])  # Adding a placeholder row for the symbol
-            output_data.append([symbol] + row_data)
+            output_data.append(row_data)
             row_index += 1
 
     except TimeoutException as e:
