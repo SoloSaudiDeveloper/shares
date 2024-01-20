@@ -7,28 +7,27 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException
 
 # Function to process each URL with provided XPaths
-def process_url_dynamic(browser, symbol, xpaths):
+def process_url_dynamic(browser, symbol, xpaths_list):
     print(f"Processing symbol {symbol}...")
     url = f"https://www.tradingview.com/symbols/TADAWUL-{symbol}/financials-dividends/"
     browser.get(url)
 
     output_data = []
 
-    try:
-        # Wait for a known element that will be on the page once it's fully loaded
-        wait_xpath = xpaths[0]  # Use the first XPath for waiting
-        WebDriverWait(browser, 20).until(EC.presence_of_element_located((By.XPATH, wait_xpath)))
+    # Wait for the page to load using the first XPath as an indicator
+    WebDriverWait(browser, 20).until(EC.presence_of_element_located((By.XPATH, xpaths_list[0][0])))
 
-        # Process each XPath
+    # Process each row of XPaths
+    for xpaths in xpaths_list:
+        row_data = []
         for xpath in xpaths:
             try:
                 element = WebDriverWait(browser, 10).until(EC.presence_of_element_located((By.XPATH, xpath)))
-                output_data.append(element.text)
+                row_data.append(element.text)
             except TimeoutException:
                 print(f"Timed out waiting for element with XPath: {xpath}.")
-                break
-    except TimeoutException as e:
-        print(f"Page did not load or known element was not found for symbol {symbol}. Exception: {e}")
+                row_data.append('N/A')  # Use 'N/A' for missing data
+        output_data.append(row_data)
 
     return output_data
 
@@ -57,11 +56,29 @@ except FileNotFoundError:
     browser.quit()
     exit()
 
-# Hardcoded XPaths for each symbol
-xpaths = [
-    "//*[@id='js-category-content']/div[1]/div[1]/div/div/div/h2",
-    # Add all other XPaths here in the same format
-    # ...
+# Hardcoded XPaths for each symbol, grouped by the layout row
+xpaths_list = [
+    # First row XPaths
+    [
+        '//*[@id="js-category-content"]/div[1]/div[1]/div/div/div/h2',
+        '//*[@id="js-category-content"]/div[2]/div/div/div[5]/div[2]/div/div[1]/div[1]/div[4]/div[3]',
+        # ... other XPaths for the first row
+    ],
+    # Second row XPaths
+    [
+        '//*[@id="js-category-content"]/div[2]/div/div/div[5]/div[2]/div/div[1]/div[2]/div[3]/div[2]',
+        # ... other XPaths for the second row
+    ],
+    # Third row XPaths
+    [
+        '//*[@id="js-category-content"]/div[2]/div/div/div[5]/div[2]/div/div[1]/div[3]/div[3]/div[2]',
+        # ... other XPaths for the third row
+    ],
+    # Fourth row XPaths
+    [
+        '//*[@id="js-category-content"]/div[2]/div/div/div[5]/div[2]/div/div[1]/div[4]/div[3]/div[2]',
+        # ... other XPaths for the fourth row
+    ]
 ]
 
 # Check if symbols were loaded
@@ -72,18 +89,20 @@ else:
     # Open the output CSV file for writing
     with open(output_csv_file_path, 'w', newline='', encoding='utf-8') as out_csvfile:
         csv_writer = csv.writer(out_csvfile)
-        # Write header row
-        header = ['Symbol'] + [f'Data {i+1}' for i in range(len(xpaths))]
+        
+        # Write header row based on the number of columns in the XPaths list
+        header = ['Symbol']
+        for i in range(len(xpaths_list[0])):
+            header.extend([f'Row{j+1}Col{i+1}' for j in range(len(xpaths_list))])
         csv_writer.writerow(header)
 
         # Process each symbol
         for symbol in symbols:
-            data = process_url_dynamic(browser, symbol, xpaths)
-            if data:
-                csv_writer.writerow([symbol] + data)
-                print(f"Data written for symbol {symbol}")
-            else:
-                print(f"No data found for symbol {symbol}")
+            data = process_url_dynamic(browser, symbol, xpaths_list)
+            # Flatten the list of lists to write to CSV
+            flat_data = [item for sublist in data for item in sublist]
+            csv_writer.writerow([symbol] + flat_data)
+            print(f"Data written for symbol {symbol}")
 
 # Close the browser after all symbols have been processed
 browser.quit()
