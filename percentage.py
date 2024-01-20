@@ -6,16 +6,20 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException
 
+def sanitize(text):
+    # Replace right-to-left and other non-printable characters
+    return ''.join(char for char in text if char.isprintable())
+    
 # Function to process each URL with provided XPaths
 def process_url_dynamic(browser, symbol, xpaths_list):
     print(f"Processing symbol {symbol}...")
-    url = f"https://www.tradingview.com/symbols/TADAWUL-{symbol}/financials-dividends/"
+    url = f"https://ar.tradingview.com/symbols/TADAWUL-{symbol}/financials-dividends/"
     browser.get(url)
 
     output_data = []
 
     # Wait for the page to load using the first XPath as an indicator
-    WebDriverWait(browser, 20).until(EC.presence_of_element_located((By.XPATH, xpaths_list[0][0])))
+    WebDriverWait(browser, 5).until(EC.presence_of_element_located((By.XPATH, xpaths_list[0][0])))
 
     # Process each row of XPaths
     for xpaths in xpaths_list:
@@ -23,7 +27,8 @@ def process_url_dynamic(browser, symbol, xpaths_list):
         for xpath in xpaths:
             try:
                 element = WebDriverWait(browser, 3).until(EC.presence_of_element_located((By.XPATH, xpath)))
-                row_data.append(element.text)
+                sanitized_text = sanitize(element.text)  # Sanitize the text before appending
+                row_data.append(sanitized_text)
             except TimeoutException:
                 print(f"Timed out waiting for element with XPath: {xpath}.")
                 row_data.append('N/A')  # Use 'N/A' for missing data
@@ -126,7 +131,7 @@ if not symbols:
     browser.quit()
 else:
     # Open the output CSV file for writing
-    with open(output_csv_file_path, 'w', newline='', encoding='utf-8') as out_csvfile:
+    with open(output_csv_file_path, 'w', newline='', encoding='utf-8-sig') as out_csvfile:
         csv_writer = csv.writer(out_csvfile)
         
         # Write header row based on the number of columns in the XPaths list
