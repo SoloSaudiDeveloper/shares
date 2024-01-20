@@ -22,7 +22,7 @@ def process_url_dynamic(browser, symbol, xpaths_list):
     WebDriverWait(browser, 20).until(EC.presence_of_element_located((By.XPATH, xpaths_list[0][0])))
 
     # Process each row of XPaths
-   for xpaths in xpaths_list:
+    for xpaths in xpaths_list:
         row_data = []  # Initialize an empty list for row data
         for xpath in xpaths:
             try:
@@ -35,6 +35,7 @@ def process_url_dynamic(browser, symbol, xpaths_list):
         output_data.append(row_data)
 
     return output_data
+
 
 # Initialize Selenium WebDriver options
 chrome_options = Options()
