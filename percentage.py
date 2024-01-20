@@ -61,11 +61,14 @@ xpaths_list = [
     # Row 1 XPaths
     [
         '//*[@id="js-category-content"]/div[1]/div[1]/div/div/div/h2',
+        '//*[@id="js-category-content"]/div[2]/div/div/div[5]/div[2]/div/div[1]/div[1]/div[4]/div[3]',
+
         # ... other XPaths for row 1
     ],
     # Second row XPaths
     [
         '//*[@id="js-category-content"]/div[2]/div/div/div[5]/div[2]/div/div[1]/div[2]/div[3]/div[2]',
+        '//*[@id="js-category-content"]/div[2]/div/div/div[5]/div[2]/div/div[1]/div[2]/div[5]/div[3]',
         # ... other XPaths for the second row
     ],
     # Third row XPaths
