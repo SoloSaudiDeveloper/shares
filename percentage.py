@@ -9,7 +9,7 @@ from selenium.common.exceptions import TimeoutException
 def sanitize(text):
     # Replace right-to-left and other non-printable characters
     return ''.join(char for char in text if char.isprintable())
-    
+
 # Function to process each URL with provided XPaths
 def process_url_dynamic(browser, symbol, xpaths_list):
     print(f"Processing symbol {symbol}...")
@@ -18,21 +18,37 @@ def process_url_dynamic(browser, symbol, xpaths_list):
 
     output_data = []
 
-    # Wait for the page to load using the first XPath as an indicator
-    WebDriverWait(browser, 5).until(EC.presence_of_element_located((By.XPATH, xpaths_list[0][0])))
+    try:
+        # Check if specific XPath exists
+        specific_xpath = "//*[@id='js-category-content']/div[2]/div/div/div[3]/div/div[2]"
+        try:
+            WebDriverWait(browser, 3).until(EC.presence_of_element_located((By.XPATH, specific_xpath)))
+            # If specific XPath exists, parse it and move to the next symbol
+            element = browser.find_element(By.XPATH, specific_xpath)
+            sanitized_text = sanitize(element.text)
+            return [[sanitized_text]]
+        except TimeoutException:
+            # If specific XPath does not exist, proceed with normal parsing
+            print(f"Specific XPath not found for symbol {symbol}, proceeding with normal parsing.")
 
-    # Process each row of XPaths
-    for xpaths in xpaths_list:
-        row_data = []  # Initialize an empty list for row data
-        for xpath in xpaths:
-            try:
-                element = WebDriverWait(browser, 3).until(EC.presence_of_element_located((By.XPATH, xpath)))
-                sanitized_text = sanitize(element.text)  # Sanitize the text before appending
-                row_data.append(sanitized_text)
-            except TimeoutException:
-                print(f"Timed out waiting for element with XPath: {xpath}.")
-                row_data.append('N/A')  # Use 'N/A' for missing data
-        output_data.append(row_data)
+        # Wait for the page to load using the first XPath as an indicator
+        WebDriverWait(browser, 5).until(EC.presence_of_element_located((By.XPATH, xpaths_list[0][0])))
+
+        # Process each row of XPaths
+        for xpaths in xpaths_list:
+            row_data = []  # Initialize an empty list for row data
+            for xpath in xpaths:
+                try:
+                    element = WebDriverWait(browser, 3).until(EC.presence_of_element_located((By.XPATH, xpath)))
+                    sanitized_text = sanitize(element.text)  # Sanitize the text before appending
+                    row_data.append(sanitized_text)
+                except TimeoutException:
+                    print(f"Timed out waiting for element with XPath: {xpath}.")
+                    row_data.append('N/A')  # Use 'N/A' for missing data
+            output_data.append(row_data)
+
+    except TimeoutException as e:
+        print(f"Page did not load or known element was not found for symbol {symbol}. Exception: {e}")
 
     return output_data
 
