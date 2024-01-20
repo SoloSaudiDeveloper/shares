@@ -1,3 +1,13 @@
+import csv
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.common.exceptions import NoSuchElementException, TimeoutException
+
+
+
 def process_url(browser, symbol):
     print(f"Processing symbol {symbol}...")
     url = f"https://www.tradingview.com/symbols/TADAWUL-{symbol}/financials-dividends/"
