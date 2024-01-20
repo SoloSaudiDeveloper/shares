@@ -13,28 +13,22 @@ def process_url_dynamic(browser, symbol, xpaths_list):
     url = f"https://www.tradingview.com/symbols/TADAWUL-{symbol}/financials-dividends/"
     browser.get(url)
 
-    output_data = []
-
     try:
         # Wait for the page to load using the first XPath as an indicator
         WebDriverWait(browser, 10).until(EC.presence_of_element_located((By.XPATH, xpaths_list[0][0])))
 
         # Check for the specific XPath
         specific_xpath = "//*[@id='js-category-content']/div[2]/div/div/div[3]/div/div[2]"
-        specific_text = None
         try:
-            specific_element = WebDriverWait(browser, 10).until(EC.presence_of_element_located((By.XPATH, specific_xpath)))
-            specific_text = specific_element.text.strip()
-        except TimeoutException:
-            print(f"Timed out waiting for specific element with XPath: {specific_xpath}.")
+            browser.find_element(By.XPATH, specific_xpath)
+            print(f"Specific XPath found for symbol {symbol}, skipping to next symbol.")
+            return None  # Skip this symbol as specific XPath is found
         except NoSuchElementException:
-            print(f"Specific XPath not found for symbol {symbol}.")
+            # Specific XPath not found, process the list of XPaths
+            print(f"Specific XPath not found for symbol {symbol}, processing with XPath list.")
 
-        # If specific text is found, add it to output
-        if specific_text:
-            output_data.append([specific_text])
-
-        # Process the list of XPaths regardless of specific text found
+        # Process the list of XPaths
+        output_data = []
         for xpaths in xpaths_list:
             row_data = []
             for xpath in xpaths:
@@ -45,11 +39,14 @@ def process_url_dynamic(browser, symbol, xpaths_list):
                     row_data.append('N/A')
             output_data.append(row_data)
 
+        return output_data
+
     except TimeoutException as e:
         print(f"Page did not load or the first XPath was not found for symbol {symbol}. Exception: {e}")
-        return []
+        return None
 
-    return output_data
+# Rest of your script where symbols are processed...
+
 
 
 
