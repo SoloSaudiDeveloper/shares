@@ -43,7 +43,7 @@ browser = webdriver.Chrome(options=chrome_options)
 
 # Read symbols from the CSV file
 csv_file_path = 'Symbols.csv'  # Update with your actual path to the CSV file
-output_csv_file_path = 'OutputResults.csv'  # Update with your desired output file path
+output_csv_file_path = 'percentage.csv'  # Update with your desired output file path
 
 symbols = []
 try:
