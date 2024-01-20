@@ -13,7 +13,7 @@ def sanitize(text):
 # Function to process each URL with provided XPaths
 def process_url_dynamic(browser, symbol, xpaths_list):
     print(f"Processing symbol {symbol}...")
-    url = f"https://www.tradingview.com/symbols/TADAWUL-{symbol}/financials-dividends/"
+    url = f"https://ar.tradingview.com/symbols/TADAWUL-{symbol}/financials-dividends/"
     browser.get(url)
 
     output_data = []
