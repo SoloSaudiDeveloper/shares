@@ -109,6 +109,8 @@ xpaths_list = [
     ]
 ]
 
+# ...
+
 # Check if symbols were loaded
 if not symbols:
     print("No symbols to process.")
@@ -126,9 +128,10 @@ else:
         for symbol in symbols:
             data = process_url_dynamic(browser, symbol, xpaths_list)
             # Write the rows for the current symbol, including the symbol on each row
-            for row_data in enumerate(data):
+            for row_data in data:  # Removed enumerate as it's not needed here
                 csv_writer.writerow([symbol] + row_data)
             print(f"Data written for symbol {symbol}")
 
 # Close the browser after all symbols have been processed
 browser.quit()
+
