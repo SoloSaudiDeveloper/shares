@@ -1,11 +1,3 @@
-import csv
-from selenium import webdriver
-from selenium.webdriver.common.by import By
-from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.common.exceptions import NoSuchElementException, TimeoutException
-
 def process_url(browser, symbol):
     print(f"Processing symbol {symbol}...")
     url = f"https://www.tradingview.com/symbols/TADAWUL-{symbol}/financials-dividends/"
@@ -22,7 +14,8 @@ def process_url(browser, symbol):
         try:
             special_element = browser.find_element(By.XPATH, special_xpath)
             special_text = special_element.text
-            output_data.append([symbol, special_text])  # Add the special text to output and move to next symbol
+            output_data.append([symbol, special_text])  # Add the special text to output
+            output_data.append([symbol, "Special Data", "N/A", "N/A", "N/A", "N/A", "N/A"])  # Placeholder for consistent format
             return output_data
         except NoSuchElementException:
             pass  # If special XPath does not exist, continue with normal processing
@@ -43,7 +36,8 @@ def process_url(browser, symbol):
             if not row_data:
                 print(f"No more data found for symbol {symbol} starting at row {row_index}.")
                 break
-            output_data.append(row_data)
+            output_data.insert(0, [symbol, "Regular Data"])  # Adding a placeholder row for the symbol
+            output_data.append([symbol] + row_data)
             row_index += 1
 
     except TimeoutException as e:
