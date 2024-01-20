@@ -1,5 +1,8 @@
-﻿Symbol,Data1,Data2,Data3,Data4,Data5,Data6,Data7
-1010,RIYAD BANK,2018,2019,2020,2021,2022,Dividends per share (FY)
-1010,‪0.77‬,‪1.07‬,‪0.50‬,‪1.04‬,‪1.15‬,Dividend yield (FY) %,‪3.88‬
-1010,‪4.46‬,‪2.48‬,‪3.84‬,‪3.62‬,Payout ratio (FY) %,‪74.70‬,‪57.30‬
-1010,‪31.81‬,‪51.78‬,‪49.15‬
+Symbol,Row1Col1,Row1Col2,Row1Col3,Row1Col4,Row1Col5,Row1Col6
+,Row2Col1,Row2Col2,Row2Col3,Row2Col4,Row2Col5,Row2Col6
+,Row3Col1,Row3Col2,Row3Col3,Row3Col4,Row3Col5,Row3Col6
+,Row4Col1,Row4Col2,Row4Col3,Row4Col4,Row4Col5,Row4Col6
+1010,RIYAD BANK,2018,2019,2020,2021,2022
+1010,Dividends per share (FY),‪0.77‬,‪1.07‬,‪0.50‬,‪1.04‬,‪1.15‬
+1010,Dividend yield (FY) %,‪3.88‬,‪4.46‬,‪2.48‬,‪3.84‬,‪3.62‬
+1010,Payout ratio (FY) %,‪74.70‬,‪57.30‬,‪31.81‬,‪51.78‬,‪49.15‬
