@@ -5,49 +5,36 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException
-from selenium.common.exceptions import NoSuchElementException, TimeoutException
 
+def sanitize(text):
+    # Replace right-to-left and other non-printable characters
+    return ''.join(char for char in text if char.isprintable())
+    
 # Function to process each URL with provided XPaths
 def process_url_dynamic(browser, symbol, xpaths_list):
     print(f"Processing symbol {symbol}...")
-    url = f"https://www.tradingview.com/symbols/TADAWUL-{symbol}/financials-dividends/"
+    url = f"https://ar.tradingview.com/symbols/TADAWUL-{symbol}/financials-dividends/"
     browser.get(url)
 
-    try:
-        # Wait for the page to load using the first XPath as an indicator
-        WebDriverWait(browser, 10).until(EC.presence_of_element_located((By.XPATH, xpaths_list[0][0])))
+    output_data = []
 
-        # Check for the specific XPath
-        specific_xpath = "//*[@id='js-category-content']/div[2]/div/div/div[3]/div/div[2]"
-        try:
-            browser.find_element(By.XPATH, specific_xpath)
-            print(f"Specific XPath found for symbol {symbol}, skipping to next symbol.")
-            return None  # Skip this symbol as specific XPath is found
-        except NoSuchElementException:
-            # Specific XPath not found, process the list of XPaths
-            print(f"Specific XPath not found for symbol {symbol}, processing with XPath list.")
+    # Wait for the page to load using the first XPath as an indicator
+    WebDriverWait(browser, 5).until(EC.presence_of_element_located((By.XPATH, xpaths_list[0][0])))
 
-        # Process the list of XPaths
-        output_data = []
-        for xpaths in xpaths_list:
-            row_data = []
-            for xpath in xpaths:
-                try:
-                    element = WebDriverWait(browser, 5).until(EC.presence_of_element_located((By.XPATH, xpath)))
-                    row_data.append(element.text)
-                except TimeoutException:
-                    row_data.append('N/A')
-            output_data.append(row_data)
+    # Process each row of XPaths
+    for xpaths in xpaths_list:
+        row_data = []  # Initialize an empty list for row data
+        for xpath in xpaths:
+            try:
+                element = WebDriverWait(browser, 3).until(EC.presence_of_element_located((By.XPATH, xpath)))
+                sanitized_text = sanitize(element.text)  # Sanitize the text before appending
+                row_data.append(sanitized_text)
+            except TimeoutException:
+                print(f"Timed out waiting for element with XPath: {xpath}.")
+                row_data.append('N/A')  # Use 'N/A' for missing data
+        output_data.append(row_data)
 
-        return output_data
-
-    except TimeoutException as e:
-        print(f"Page did not load or the first XPath was not found for symbol {symbol}. Exception: {e}")
-        return None
-
-# Rest of your script where symbols are processed...
-
-
+    return output_data
 
 
 # Initialize Selenium WebDriver options
@@ -78,9 +65,8 @@ except FileNotFoundError:
 # Hardcoded XPaths for each symbol, grouped by the layout row
 xpaths_list = [
     # Row 1 XPaths
-          [
+      [
         '//*[@id="js-category-content"]/div[1]/div[1]/div/div/div/h2',
-              
         '//*[@id="js-category-content"]/div[2]/div/div/div[5]/div[2]/div/div[1]/div[1]/div[4]/div[1]',
         '//*[@id="js-category-content"]/div[2]/div/div/div[5]/div[2]/div/div[1]/div[1]/div[4]/div[2]',
         '//*[@id="js-category-content"]/div[2]/div/div/div[5]/div[2]/div/div[1]/div[1]/div[4]/div[3]',
@@ -122,9 +108,8 @@ xpaths_list = [
     ],
     # Fourth row XPaths
     [
+        '//*[@id="js-category-content"]/div[2]/div/div/div[5]/div[2]/div/div[1]/div[4]/div[3]/div[1]',
         '//*[@id="js-category-content"]/div[2]/div/div/div[5]/div[2]/div/div[1]/div[4]/div[3]/div[2]',
-        '//*[@id="js-category-content"]/div[2]/div/div/div[5]/div[2]/div/div[1]/div[4]/div[5]/div[1]',
-        '//*[@id="js-category-content"]/div[2]/div/div/div[5]/div[2]/div/div[1]/div[4]/div[5]/div[2]',
         '//*[@id="js-category-content"]/div[2]/div/div/div[5]/div[2]/div/div[1]/div[4]/div[5]/div[3]',
         '//*[@id="js-category-content"]/div[2]/div/div/div[5]/div[2]/div/div[1]/div[4]/div[5]/div[4]',
         '//*[@id="js-category-content"]/div[2]/div/div/div[5]/div[2]/div/div[1]/div[4]/div[5]/div[5]',
@@ -145,7 +130,7 @@ if not symbols:
     browser.quit()
 else:
     # Open the output CSV file for writing
-    with open(output_csv_file_path, 'w', newline='', encoding='utf-8') as out_csvfile:
+    with open(output_csv_file_path, 'w', newline='', encoding='utf-8-sig') as out_csvfile:
         csv_writer = csv.writer(out_csvfile)
         
         # Write header row based on the number of columns in the XPaths list
