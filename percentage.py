@@ -6,31 +6,21 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException
 
-# Hardcoded XPaths based on the provided Excel file
-BASE_URL = "https://www.tradingview.com/symbols/TADAWUL-{symbol}/financials-dividends"
-XPATHS = [
-    "//*[@id='js-category-content']/div[2]/div/div/div[5]/div[2]/div/div[1]/div[1]/div[3]/div[2]",
-    "//*[@id='js-category-content']/div[2]/div/div/div[5]/div[2]/div/div[1]/div[1]/div[4]/div[3]",
-    # Add additional XPaths here based on the Excel file
-]
-
-# Function to process each URL with the given XPaths
-def process_url_dynamic(browser, symbol):
+# Function to process each URL with provided XPaths
+def process_url_dynamic(browser, symbol, xpaths):
     print(f"Processing symbol {symbol}...")
-    url = BASE_URL.format(symbol=symbol)
-    print(f"Accessing URL: {url}")  # Debug: Print the URL being accessed
+    url = f"https://www.tradingview.com/symbols/TADAWUL-{symbol}/financials-dividends/"
     browser.get(url)
 
     output_data = []
 
     try:
-        # Wait for the page to load by checking for the presence of the first element
-        print(f"Waiting for XPath: {XPATHS[0]}")  # Debug: Print the XPath being waited for
-        WebDriverWait(browser, 20).until(EC.presence_of_element_located((By.XPATH, XPATHS[0])))
+        # Wait for a known element that will be on the page once it's fully loaded
+        wait_xpath = xpaths[0]  # Use the first XPath for waiting
+        WebDriverWait(browser, 20).until(EC.presence_of_element_located((By.XPATH, wait_xpath)))
 
-        # Extract data using the provided XPaths
-        for xpath in XPATHS:
-            print(f"Processing XPath: {xpath}")  # Debug: Print the XPath being processed
+        # Process each XPath
+        for xpath in xpaths:
             try:
                 element = WebDriverWait(browser, 10).until(EC.presence_of_element_located((By.XPATH, xpath)))
                 output_data.append(element.text)
@@ -67,6 +57,13 @@ except FileNotFoundError:
     browser.quit()
     exit()
 
+# Hardcoded XPaths for each symbol
+xpaths = [
+    "//*[@id='js-category-content']/div[1]/div[1]/div/div/div/h2",
+    # Add all other XPaths here in the same format
+    # ...
+]
+
 # Check if symbols were loaded
 if not symbols:
     print("No symbols to process.")
@@ -76,11 +73,12 @@ else:
     with open(output_csv_file_path, 'w', newline='', encoding='utf-8') as out_csvfile:
         csv_writer = csv.writer(out_csvfile)
         # Write header row
-        csv_writer.writerow(['Symbol'] + [f'Data {i + 1}' for i in range(len(XPATHS))])
+        header = ['Symbol'] + [f'Data {i+1}' for i in range(len(xpaths))]
+        csv_writer.writerow(header)
 
         # Process each symbol
         for symbol in symbols:
-            data = process_url_dynamic(browser, symbol)
+            data = process_url_dynamic(browser, symbol, xpaths)
             if data:
                 csv_writer.writerow([symbol] + data)
                 print(f"Data written for symbol {symbol}")
