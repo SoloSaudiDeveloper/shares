@@ -7,19 +7,21 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException
 
 # Function to process each URL with dynamic XPaths
-def process_url_dynamic(browser, symbol, xpaths):
+def process_url_dynamic(browser, symbol):
     print(f"Processing symbol {symbol}...")
-    url = xpaths[0].replace("{symbol}", symbol)
+    url = f"https://www.tradingview.com/symbols/TADAWUL-{symbol}/"  # Example URL
     browser.get(url)
 
     output_data = []
 
     try:
         # Wait for a known element that will be on the page once it's fully loaded
-        wait_xpath = xpaths[1]
+        wait_xpath = "//*[@id='js-category-content']/div[2]/div/div/div[5]/div[2]/div/div[1]/div[1]/div[3]/div[2]"
         WebDriverWait(browser, 20).until(EC.presence_of_element_located((By.XPATH, wait_xpath)))
 
-        for xpath in xpaths[1:]:
+        # Dynamically generate and process XPaths
+        for i in range(3, 8):  # Adjust the range according to the number of columns
+            xpath = f"//*[@id='js-category-content']/div[2]/div/div/div[5]/div[2]/div/div[1]/div[1]/div[4]/div[{i}]"
             try:
                 element = WebDriverWait(browser, 10).until(EC.presence_of_element_located((By.XPATH, xpath)))
                 output_data.append(element.text)
@@ -41,38 +43,35 @@ chrome_options.add_argument("--disable-gpu")
 # Initialize Selenium WebDriver
 browser = webdriver.Chrome(options=chrome_options)
 
-# Read symbols and XPaths from the CSV file
+# Read symbols from the CSV file
 csv_file_path = 'Symbols.csv'  # Update with your actual path to the CSV file
-output_csv_file_path = 'OutputResults1.csv'  # Update with your desired output file path
+output_csv_file_path = 'OutputResults.csv'  # Update with your desired output file path
 
-symbols_and_xpaths = []
+symbols = []
 try:
     with open(csv_file_path, newline='', encoding='utf-8') as csvfile:
         csv_reader = csv.reader(csvfile)
-        for row in csv_reader:
-            symbols_and_xpaths.append(row)
-    print("Symbols and XPaths loaded.")
+        symbols = [row[0] for row in csv_reader if row]  # Read symbols, skip empty rows
+    print("Symbols loaded.")
 except FileNotFoundError:
     print(f"Error: File not found - {csv_file_path}")
     browser.quit()
     exit()
 
-# Check if data was loaded
-if not symbols_and_xpaths:
-    print("No data to process.")
+# Check if symbols were loaded
+if not symbols:
+    print("No symbols to process.")
     browser.quit()
 else:
     # Open the output CSV file for writing
     with open(output_csv_file_path, 'w', newline='', encoding='utf-8') as out_csvfile:
         csv_writer = csv.writer(out_csvfile)
         # Write header row
-        csv_writer.writerow(['Symbol'] + [f'Data {i}' for i in range(1, len(symbols_and_xpaths[0]))])
+        csv_writer.writerow(['Symbol', 'Data 1', 'Data 2', 'Data 3', 'Data 4', 'Data 5'])
 
         # Process each symbol
-        for row in symbols_and_xpaths:
-            symbol = row[0]  # Assuming the first column contains the symbol
-            xpaths = row
-            data = process_url_dynamic(browser, symbol, xpaths)
+        for symbol in symbols:
+            data = process_url_dynamic(browser, symbol)
             if data:
                 csv_writer.writerow([symbol] + data)
                 print(f"Data written for symbol {symbol}")
