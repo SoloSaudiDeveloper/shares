@@ -17,26 +17,31 @@ def process_url_dynamic(browser, symbol, xpaths_list):
 
     try:
         # Wait for the page to load using the first XPath as an indicator
-        WebDriverWait(browser, 10).until(EC.presence_of_element_located((By.XPATH, xpaths_list[0][0])))
+        WebDriverWait(browser, 20).until(EC.presence_of_element_located((By.XPATH, xpaths_list[0][0])))
 
         # Check for the specific XPath
         specific_xpath = "//*[@id='js-category-content']/div[2]/div/div/div[3]/div/div[2]"
         try:
-            browser.find_element(By.XPATH, specific_xpath)
+            specific_element = browser.find_element(By.XPATH, specific_xpath)
+            specific_text = specific_element.text.strip()
+            if specific_text:
+                # If specific XPath has text, process this text and move on to the next symbol
+                output_data.append([specific_text])
+                return output_data
         except NoSuchElementException:
-            print(f"Specific XPath not found for symbol {symbol}, moving to next symbol.")
-            return []
+            # If specific XPath not found, move on to process the list of XPaths
+            pass
 
-        # Process each row of XPaths
+        # Process each row of XPaths if specific XPath not found or no text
         for xpaths in xpaths_list:
-            row_data = []  # Initialize an empty list for row data
+            row_data = []
             for xpath in xpaths:
                 try:
                     element = WebDriverWait(browser, 10).until(EC.presence_of_element_located((By.XPATH, xpath)))
                     row_data.append(element.text)
                 except TimeoutException:
-                    print(f"Timed out waiting for element with XPath: {xpath}.")
-                    row_data.append('N/A')  # Use 'N/A' for missing data
+                    print(f"Timed out waiting for element with XPath: {xpath}. Appending 'N/A'.")
+                    row_data.append('N/A')
             output_data.append(row_data)
 
     except TimeoutException as e:
