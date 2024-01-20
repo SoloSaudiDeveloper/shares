@@ -6,16 +6,23 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import NoSuchElementException, TimeoutException
 
-# Define the process_url function
 def process_url(browser, symbol):
     print(f"Processing symbol {symbol}...")
     url = f"https://www.tradingview.com/symbols/TADAWUL-{symbol}/financials-dividends/"
     browser.get(url)
 
     output_data = []
-    row_index = 1  # Start the row index at 1
 
     try:
+        # First, check if the specific XPath exists
+        specific_xpath = "//*[@id='js-category-content']/div[2]/div/div/div[3]/div/div[2]"
+        try:
+            specific_element = WebDriverWait(browser, 10).until(EC.presence_of_element_located((By.XPATH, specific_xpath)))
+            specific_text = specific_element.text
+            return [[specific_text]]  # Return only this data and skip the rest for this symbol
+        except TimeoutException:
+            print(f"Specific XPath not found for symbol {symbol}, proceeding with normal parsing.")
+
         # Wait for a known element that will be on the page once it's fully loaded
         WebDriverWait(browser, 20).until(EC.presence_of_element_located((By.XPATH, "//*[@id='js-category-content']/div[2]/div/div/div[8]/div[2]/div/div[1]/div[1]/div[2]")))
 
@@ -23,9 +30,10 @@ def process_url(browser, symbol):
         single_use_xpath = "//*[@id='js-category-content']/div[2]/div/div/div[2]/div/div/p"
         single_use_element = WebDriverWait(browser, 10).until(EC.presence_of_element_located((By.XPATH, single_use_xpath)))
         single_use_text = single_use_element.text
-        output_data.append([symbol, single_use_text])  # Add to the output
+        output_data.append([single_use_text])  # Add to the output
 
         # Now proceed with the rest of the data extraction for the table
+        row_index = 1
         while True:
             row_data = []
             for col_index in range(1, 6):  # Loop through columns 1 to 5
@@ -47,6 +55,7 @@ def process_url(browser, symbol):
         print(f"Page did not load or known element was not found for symbol {symbol}. Exception: {e}")
 
     return output_data
+
 
 # Initialize Selenium WebDriver options
 chrome_options = Options()
