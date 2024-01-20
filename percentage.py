@@ -19,7 +19,7 @@ def process_url_dynamic(browser, symbol, xpaths_list):
 
     # Process each row of XPaths
     for xpaths in xpaths_list:
-        row_data = [symbol]  # Start with the symbol for the first row only
+        row_data = []  # Initialize an empty list for row data
         for xpath in xpaths:
             try:
                 element = WebDriverWait(browser, 10).until(EC.presence_of_element_located((By.XPATH, xpath)))
@@ -128,7 +128,7 @@ else:
         for symbol in symbols:
             data = process_url_dynamic(browser, symbol, xpaths_list)
             # Write the rows for the current symbol, including the symbol on each row
-            for row_data in data:  # Removed enumerate as it's not needed here
+            for row_data in data:
                 csv_writer.writerow([symbol] + row_data)
             print(f"Data written for symbol {symbol}")
 
