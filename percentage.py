@@ -5,7 +5,6 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException
-import pandas as pd
 
 # Function to process each URL with dynamic XPaths
 def process_url_dynamic(browser, symbol, xpaths):
@@ -42,20 +41,24 @@ chrome_options.add_argument("--disable-gpu")
 # Initialize Selenium WebDriver
 browser = webdriver.Chrome(options=chrome_options)
 
-# Read symbols and XPaths from the Excel file
-excel_file_path = 'Symbols.csv'  # Update with your actual path to the Excel file
-output_csv_file_path = 'percentage.csv'  # Update with your desired output file path
+# Read symbols and XPaths from the CSV file
+csv_file_path = 'Symbols.csv'  # Update with your actual path to the CSV file
+output_csv_file_path = 'OutputResults1.csv'  # Update with your desired output file path
 
+symbols_and_xpaths = []
 try:
-    df = pd.read_excel(excel_file_path)
+    with open(csv_file_path, newline='', encoding='utf-8') as csvfile:
+        csv_reader = csv.reader(csvfile)
+        for row in csv_reader:
+            symbols_and_xpaths.append(row)
     print("Symbols and XPaths loaded.")
 except FileNotFoundError:
-    print(f"Error: File not found - {excel_file_path}")
+    print(f"Error: File not found - {csv_file_path}")
     browser.quit()
     exit()
 
 # Check if data was loaded
-if df.empty:
+if not symbols_and_xpaths:
     print("No data to process.")
     browser.quit()
 else:
@@ -63,12 +66,12 @@ else:
     with open(output_csv_file_path, 'w', newline='', encoding='utf-8') as out_csvfile:
         csv_writer = csv.writer(out_csvfile)
         # Write header row
-        csv_writer.writerow(['Symbol'] + [f'Data {i}' for i in range(1, len(df.columns))])
+        csv_writer.writerow(['Symbol'] + [f'Data {i}' for i in range(1, len(symbols_and_xpaths[0]))])
 
         # Process each symbol
-        for index, row in df.iterrows():
+        for row in symbols_and_xpaths:
             symbol = row[0]  # Assuming the first column contains the symbol
-            xpaths = row.tolist()
+            xpaths = row
             data = process_url_dynamic(browser, symbol, xpaths)
             if data:
                 csv_writer.writerow([symbol] + data)
