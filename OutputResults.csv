@@ -1,8 +1,8 @@
-Symbol,Row1Col1
-,Row2Col1
+Symbol,Row1Col1,Row1Col2
+,Row2Col1,Row2Col2
 ,Row3Col1
 ,Row4Col1
-1010,RIYAD BANK
-1010,Dividends per share (FY)
+1010,RIYAD BANK,2018
+1010,Dividends per share (FY),‪0.77‬
 1010,Dividend yield (FY) %
 1010,Payout ratio (FY) %
