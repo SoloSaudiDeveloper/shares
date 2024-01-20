@@ -7,7 +7,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException
 
 # Hardcoded XPaths based on the provided Excel file
-BASE_URL = "https://www.tradingview.com/symbols/TADAWUL-{symbol}/"
+BASE_URL = "https://www.tradingview.com/symbols/TADAWUL-{symbol}/financials-dividends/"
 XPATHS = [
     "//*[@id='js-category-content']/div[2]/div/div/div[5]/div[2]/div/div[1]/div[1]/div[3]/div[2]",
     "//*[@id='js-category-content']/div[2]/div/div/div[5]/div[2]/div/div[1]/div[1]/div[4]/div[3]",
