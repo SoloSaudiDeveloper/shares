@@ -6,6 +6,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import NoSuchElementException, TimeoutException
 
+# Define the process_url function
 def process_url(browser, symbol):
     print(f"Processing symbol {symbol}...")
     url = f"https://www.tradingview.com/symbols/TADAWUL-{symbol}/financials-dividends/"
@@ -56,7 +57,6 @@ def process_url(browser, symbol):
 
     return output_data
 
-
 # Initialize Selenium WebDriver options
 chrome_options = Options()
 chrome_options.add_argument('--no-sandbox')
@@ -102,8 +102,6 @@ else:
                 for row in data:
                     csv_writer.writerow([symbol] + row)
                 print(f"Data written for symbol {symbol}")
-            else:
-                print(f"No data found for symbol {symbol}")
 
 # Close the browser after all symbols have been processed
 browser.quit()
