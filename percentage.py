@@ -14,20 +14,33 @@ def process_url_dynamic(browser, symbol, xpaths_list):
 
     output_data = []
 
-    # Wait for the page to load using the first XPath as an indicator
-    WebDriverWait(browser, 20).until(EC.presence_of_element_located((By.XPATH, xpaths_list[0][0])))
+    try:
+        # Wait for the page to load using the first XPath as an indicator
+        WebDriverWait(browser, 20).until(EC.presence_of_element_located((By.XPATH, xpaths_list[0][0])))
 
-    # Process each row of XPaths
-    for xpaths in xpaths_list:
-        row_data = []  # Initialize an empty list for row data
-        for xpath in xpaths:
-            try:
-                element = WebDriverWait(browser, 3).until(EC.presence_of_element_located((By.XPATH, xpath)))
-                row_data.append(element.text)
-            except TimeoutException:
-                print(f"Timed out waiting for element with XPath: {xpath}.")
-                row_data.append('N/A')  # Use 'N/A' for missing data
-        output_data.append(row_data)
+        # Check for the specific XPath
+        specific_xpath = "//*[@id='js-category-content']/div[2]/div/div/div[3]/div/div[2]"
+        try:
+            browser.find_element(By.XPATH, specific_xpath)
+        except NoSuchElementException:
+            print(f"Specific XPath not found for symbol {symbol}, moving to next symbol.")
+            return []
+
+        # Process each row of XPaths
+        for xpaths in xpaths_list:
+            row_data = []  # Initialize an empty list for row data
+            for xpath in xpaths:
+                try:
+                    element = WebDriverWait(browser, 3).until(EC.presence_of_element_located((By.XPATH, xpath)))
+                    row_data.append(element.text)
+                except TimeoutException:
+                    print(f"Timed out waiting for element with XPath: {xpath}.")
+                    row_data.append('N/A')  # Use 'N/A' for missing data
+            output_data.append(row_data)
+
+    except TimeoutException as e:
+        print(f"Page did not load or the first XPath was not found for symbol {symbol}. Exception: {e}")
+        return []
 
     return output_data
 
