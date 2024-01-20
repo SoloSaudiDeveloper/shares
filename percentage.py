@@ -123,8 +123,8 @@ if not symbols:
     browser.quit()
 else:
     # Open the output CSV file for writing
-   with open(output_csv_file_path, 'w', newline='', encoding='utf-8-sig') as out_csvfile:
-    csv_writer = csv.writer(out_csvfile)
+    with open(output_csv_file_path, 'w', newline='', encoding='utf-8-sig') as out_csvfile:
+        csv_writer = csv.writer(out_csvfile)
         
         # Write header row based on the number of columns in the XPaths list
         header = ['Symbol'] + [f'Col{i+1}' for i in range(len(xpaths_list[0]))]
@@ -140,4 +140,3 @@ else:
 
 # Close the browser after all symbols have been processed
 browser.quit()
-
