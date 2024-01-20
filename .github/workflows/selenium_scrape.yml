@@ -45,7 +45,9 @@ jobs:
 
     - name: Run Selenium Script
       run: python main.py  # Make sure this script updates OutputResults.csv
-
+      
+    - name: Run percentage Script
+      run: python percentage.py  # Make sure this script updates OutputResults.csv
     - name: Commit and Push Output File
       env:
         ACCESS_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
