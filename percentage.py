@@ -118,14 +118,16 @@ else:
     with open(output_csv_file_path, 'w', newline='', encoding='utf-8') as out_csvfile:
         csv_writer = csv.writer(out_csvfile)
         
+        # Write header row based on the number of columns in the XPaths list
+        header = ['Symbol'] + [f'Col{i+1}' for i in range(len(xpaths_list[0]))]
+        csv_writer.writerow(header)
+        
         # Process each symbol
         for symbol in symbols:
             data = process_url_dynamic(browser, symbol, xpaths_list)
-            # Write the symbol and the first row of data
-            csv_writer.writerow(data[0])
-            # Write the remaining rows of data without the symbol
-            for row_data in data[1:]:
-                csv_writer.writerow([''] + row_data[1:])  # Exclude the symbol from subsequent rows
+            # Write the rows for the current symbol, including the symbol on each row
+            for row_data in enumerate(data):
+                csv_writer.writerow([symbol] + row_data)
             print(f"Data written for symbol {symbol}")
 
 # Close the browser after all symbols have been processed
