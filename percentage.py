@@ -19,7 +19,7 @@ def process_url_dynamic(browser, symbol, xpaths_list):
 
     # Process each row of XPaths
     for xpaths in xpaths_list:
-        row_data = []
+        row_data = [symbol]  # Start with the symbol for each row
         for xpath in xpaths:
             try:
                 element = WebDriverWait(browser, 10).until(EC.presence_of_element_located((By.XPATH, xpath)))
@@ -27,10 +27,9 @@ def process_url_dynamic(browser, symbol, xpaths_list):
             except TimeoutException:
                 print(f"Timed out waiting for element with XPath: {xpath}.")
                 row_data.append('N/A')  # Use 'N/A' for missing data
-        output_data.extend(row_data)  # Add the row data to output_data
+        output_data.append(row_data)
 
-    # Split the output_data into chunks of 7 columns
-    return [output_data[i:i+7] for i in range(0, len(output_data), 7)]
+    return output_data
 
 # Initialize Selenium WebDriver options
 chrome_options = Options()
@@ -59,8 +58,8 @@ except FileNotFoundError:
 
 # Hardcoded XPaths for each symbol, grouped by the layout row
 xpaths_list = [
-    # XPaths for all rows
-       [
+    # Row 1 XPaths
+    [
         '//*[@id="js-category-content"]/div[1]/div[1]/div/div/div/h2',
         '//*[@id="js-category-content"]/div[2]/div/div/div[5]/div[2]/div/div[1]/div[1]/div[4]/div[3]',
         '//*[@id="js-category-content"]/div[2]/div/div/div[5]/div[2]/div/div[1]/div[1]/div[4]/div[4]',
@@ -107,8 +106,8 @@ xpaths_list = [
       
         
         # ... other XPaths for the fourth row
-    ],
-    # ... Add other XPaths here
+    ]
+    # ... other rows of XPaths
 ]
 
 # Check if symbols were loaded
@@ -117,19 +116,27 @@ if not symbols:
     browser.quit()
 else:
     # Open the output CSV file for writing
-    with open(output_csv_file_path, 'w', newline='', encoding='utf-8-sig') as out_csvfile:
+    with open(output_csv_file_path, 'w', newline='', encoding='utf-8') as out_csvfile:
         csv_writer = csv.writer(out_csvfile)
         
-        # Write header row for 7 columns
-        header = ['Symbol', 'Data1', 'Data2', 'Data3', 'Data4', 'Data5', 'Data6', 'Data7']
+        # Write header row based on the number of columns in the XPaths list
+        header = ['Symbol']
+        for i in range(len(xpaths_list[0])):
+            header.extend([f'Row1Col{i+1}'])
         csv_writer.writerow(header)
+        
+        # Additionally write headers for other rows
+        for row_index in range(1, len(xpaths_list)):
+            header = ['']
+            for i in range(len(xpaths_list[row_index])):
+                header.extend([f'Row{row_index+1}Col{i+1}'])
+            csv_writer.writerow(header)
         
         # Process each symbol
         for symbol in symbols:
-            # Write the symbol and the data in groups of 7 columns
-            data_chunks = process_url_dynamic(browser, symbol, xpaths_list)
-            for chunk in data_chunks:
-                csv_writer.writerow([symbol] + chunk)
+            data = process_url_dynamic(browser, symbol, xpaths_list)
+            for row_data in data:
+                csv_writer.writerow(row_data)
             print(f"Data written for symbol {symbol}")
 
 # Close the browser after all symbols have been processed
