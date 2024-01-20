@@ -22,7 +22,7 @@ def process_url_dynamic(browser, symbol, xpaths_list):
         row_data = []  # Initialize an empty list for row data
         for xpath in xpaths:
             try:
-                element = WebDriverWait(browser, 10).until(EC.presence_of_element_located((By.XPATH, xpath)))
+                element = WebDriverWait(browser, 3).until(EC.presence_of_element_located((By.XPATH, xpath)))
                 row_data.append(element.text)
             except TimeoutException:
                 print(f"Timed out waiting for element with XPath: {xpath}.")
