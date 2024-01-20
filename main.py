@@ -6,6 +6,8 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import NoSuchElementException, TimeoutException
 
+# ... (other parts of the script remain unchanged)
+
 def process_url(browser, symbol):
     print(f"Processing symbol {symbol}...")
     url = f"https://www.tradingview.com/symbols/TADAWUL-{symbol}/financials-dividends/"
@@ -20,7 +22,7 @@ def process_url(browser, symbol):
 
         # Extract text from the single-use XPath
         single_use_xpath = "//*[@id='js-category-content']/div[2]/div/div/div[2]/div/div/p"
-        single_use_element = browser.find_element_by_xpath(single_use_xpath)
+        single_use_element = WebDriverWait(browser, 10).until(EC.presence_of_element_located((By.XPATH, single_use_xpath)))
         single_use_text = single_use_element.text
         output_data.append([symbol, single_use_text])  # Add to the first row
 
@@ -33,12 +35,10 @@ def process_url(browser, symbol):
                     element = WebDriverWait(browser, 10).until(EC.presence_of_element_located((By.XPATH, current_xpath)))
                     row_data.append(element.text)
                 except TimeoutException:
-                    # If we time out waiting for a column, assume no more data in this row
                     print(f"Timed out waiting for column {col_index} of row {row_index}.")
                     break
 
             if not row_data:
-                # If we found no data in this row, assume there are no more rows
                 print(f"No more data found for symbol {symbol} starting at row {row_index}.")
                 break
             output_data.append(row_data)
@@ -49,7 +49,7 @@ def process_url(browser, symbol):
 
     return output_data
 
-# Rest of your code should follow here, including initialization and CSV reading/writing.
+# ... (rest of your code for initialization and CSV reading/writing)
 
 
 # Rest of your code should follow here, including initialization and CSV reading/writing.
