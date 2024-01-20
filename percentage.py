@@ -43,8 +43,8 @@ chrome_options.add_argument("--disable-gpu")
 browser = webdriver.Chrome(options=chrome_options)
 
 # Read symbols and XPaths from the Excel file
-excel_file_path = 'path_to_your_excel_file.xlsx'  # Update with your actual path to the Excel file
-output_csv_file_path = 'OutputResults.csv'  # Update with your desired output file path
+excel_file_path = 'Symbols.csv''  # Update with your actual path to the Excel file
+output_csv_file_path = 'percentage.csv'  # Update with your desired output file path
 
 try:
     df = pd.read_excel(excel_file_path)
