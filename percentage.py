@@ -21,17 +21,20 @@ def process_url_dynamic(browser, symbol, xpaths_list):
 
         # Check for the specific XPath
         specific_xpath = "//*[@id='js-category-content']/div[2]/div/div/div[3]/div/div[2]"
+        specific_text = None
         try:
-            # Adding an explicit wait for the specific element
             specific_element = WebDriverWait(browser, 10).until(EC.presence_of_element_located((By.XPATH, specific_xpath)))
             specific_text = specific_element.text.strip()
-            if specific_text:
-                output_data.append([specific_text])
-                return output_data
         except TimeoutException:
             print(f"Timed out waiting for specific element with XPath: {specific_xpath}.")
+        except NoSuchElementException:
+            print(f"Specific XPath not found for symbol {symbol}.")
 
-        # If specific XPath not found or no text, process the list of XPaths
+        # If specific text is found, add it to output
+        if specific_text:
+            output_data.append([specific_text])
+
+        # Process the list of XPaths regardless of specific text found
         for xpaths in xpaths_list:
             row_data = []
             for xpath in xpaths:
@@ -47,6 +50,7 @@ def process_url_dynamic(browser, symbol, xpaths_list):
         return []
 
     return output_data
+
 
 
 # Initialize Selenium WebDriver options
