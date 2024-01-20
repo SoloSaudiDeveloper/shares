@@ -17,7 +17,7 @@ def process_url_dynamic(browser, symbol, xpaths_list):
 
     try:
         # Wait for the page to load using the first XPath as an indicator
-        WebDriverWait(browser, 20).until(EC.presence_of_element_located((By.XPATH, xpaths_list[0][0])))
+        WebDriverWait(browser, 10).until(EC.presence_of_element_located((By.XPATH, xpaths_list[0][0])))
 
         # Check for the specific XPath
         specific_xpath = "//*[@id='js-category-content']/div[2]/div/div/div[3]/div/div[2]"
@@ -32,7 +32,7 @@ def process_url_dynamic(browser, symbol, xpaths_list):
             row_data = []  # Initialize an empty list for row data
             for xpath in xpaths:
                 try:
-                    element = WebDriverWait(browser, 3).until(EC.presence_of_element_located((By.XPATH, xpath)))
+                    element = WebDriverWait(browser, 10).until(EC.presence_of_element_located((By.XPATH, xpath)))
                     row_data.append(element.text)
                 except TimeoutException:
                     print(f"Timed out waiting for element with XPath: {xpath}.")
