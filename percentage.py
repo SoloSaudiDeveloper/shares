@@ -16,29 +16,20 @@ def process_url_dynamic(browser, symbol):
     output_data = []
 
     try:
-        # Base XPath for the primary container
+        # Wait for the page container to load
         container_xpath = '//*[@id="js-category-content"]/div[2]/div/div/div[5]/div[2]/div/div[1]'
         WebDriverWait(browser, 10).until(EC.presence_of_element_located((By.XPATH, container_xpath)))
 
         # Find all relevant child elements within the container
         elements = browser.find_elements(By.XPATH, f"{container_xpath}//div[contains(@class, 'dividendRow')]")
 
-        # If primary elements found, process them
-        if elements:
-            for element in elements:
-                sanitized_text = sanitize(element.text)
-                output_data.append(sanitized_text)
-        else:
-            # If no primary elements found, attempt to find the alternative element
-            alt_element_xpath = '//*[@id="js-category-content"]/div[2]/div/div/div[3]/div/strong'
-            element = WebDriverWait(browser, 5).until(EC.presence_of_element_located((By.XPATH, alt_element_xpath)))
+        # Process each found element
+        for element in elements:
             sanitized_text = sanitize(element.text)
             output_data.append(sanitized_text)
     except Exception as e:
-        # If both primary and alternative elements are not found, or any other error occurs
         print(f"An error occurred while processing {symbol}: {e}")
     return output_data
-
 
 # Initialize Selenium WebDriver
 chrome_options = Options()
