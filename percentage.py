@@ -60,13 +60,16 @@ except FileNotFoundError as e:
 # Process each symbol and write to CSV
 with open(output_csv_file_path, 'w', newline='', encoding='utf-8-sig') as csvfile:
     csv_writer = csv.writer(csvfile)
-    # Write header
-    csv_writer.writerow(['Symbol', 'Data'])
+    # Assuming you may not know the exact number of data points beforehand, initialize with a large enough header
+    # Adjust the range based on the maximum expected number of values per symbol
+    headers = ['Symbol'] + [f'Value {i+1}' for i in range(20)]  # Example with 20 values
+    csv_writer.writerow(headers)
 
     for symbol in symbols:
         data = process_url_dynamic(browser, symbol)
-        # Write symbol and concatenated data to CSV
-        csv_writer.writerow([symbol, ' | '.join(data)])  # Concatenate data with '|' for readability
+        # Ensure the row has the same number of columns as the header
+        row = [symbol] + data + [''] * (len(headers) - 1 - len(data))
+        csv_writer.writerow(row)
         print(f"Data written for symbol {symbol}")
 
 browser.quit()
