@@ -15,20 +15,24 @@ def process_url_dynamic(browser, symbol):
 
     output_data = []
 
-    # Wait for the page container to load
+    # Attempt to wait for the container to load with a longer timeout
     container_xpath = '//*[@id="js-category-content"]/div[2]/div/div/div[5]/div[2]/div/div[1]'
-    WebDriverWait(browser, 10).until(EC.presence_of_element_located((By.XPATH, container_xpath)))
+    try:
+        WebDriverWait(browser, 20).until(EC.presence_of_element_located((By.XPATH, container_xpath)))
+        print("Container element found.")
+        
+        # Find all relevant child elements within the container
+        elements = browser.find_elements(By.XPATH, f"{container_xpath}//div[contains(@class, 'dividendRow')]")
+        if not elements:
+            print("No child elements found. Check XPath.")
+        for element in elements:
+            sanitized_text = sanitize(element.text)
+            output_data.append(sanitized_text)
 
-    # Find all relevant child elements within the container
-    elements = browser.find_elements(By.XPATH, f"{container_xpath}//div[contains(@class, 'dividendRow')]")
-
-    # Process each found element
-    for element in elements:
-        sanitized_text = sanitize(element.text)
-        output_data.append(sanitized_text)
+    except TimeoutException as e:
+        print(f"Timed out waiting for container element. Error: {e}")
 
     return output_data
-
 # Initialize Selenium WebDriver
 chrome_options = Options()
 chrome_options.add_argument('--headless')
