@@ -16,23 +16,22 @@ def process_url_dynamic(browser, symbol):
     output_data = []
 
     try:
-        # Wait for the main content area to load
-        main_content_xpath = '//*[@id="js-category-content"]'
-        WebDriverWait(browser, 10).until(EC.presence_of_element_located((By.XPATH, main_content_xpath)))
+        # Wait for the container to load
+        container_xpath = '//*[@id="js-category-content"]/div[2]/div/div/div[5]/div[2]/div/div[1]'
+        WebDriverWait(browser, 10).until(EC.presence_of_element_located((By.XPATH, container_xpath)))
 
-        # Find the common parent element
-        parent_xpath = '//*[@id="js-category-content"]/div[2]/div/div/div[5]/div[2]/div/div[1]/div[1]/div[4]'
-        parent_element = browser.find_element(By.XPATH, parent_xpath)
+        # Find all child elements under the container. Assuming these elements have a consistent tag or class to target.
+        # Adjust the XPath to target the specific elements you're interested in.
+        child_elements_xpath = f"{container_xpath}//*"  # This will select all elements under the container.
+        child_elements = browser.find_elements(By.XPATH, child_elements_xpath)
 
-        # Automatically find all relevant child elements within the parent
-        child_elements = parent_element.find_elements(By.XPATH, "./*")
+        for element in child_elements:
+            sanitized_text = sanitize(element.text)
+            if sanitized_text:  # Ensure the text is not empty
+                output_data.append(sanitized_text)
 
-        for child in child_elements:
-            sanitized_text = sanitize(child.text)
-            output_data.append(sanitized_text)
     except Exception as e:
         print(f"An error occurred while processing {symbol}: {e}")
-
     return output_data
 
 
