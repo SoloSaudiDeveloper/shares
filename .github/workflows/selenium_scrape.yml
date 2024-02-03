@@ -3,8 +3,7 @@ name: Selenium Scraper
 on:
   push: # Trigger on push, you can change this to a schedule
   schedule:
-    
-  - cron: '0 13 * * 0-4'  # Runs at 1 PM UTC, equivalent to 4 PM Riyadh time, from Sunday to Thursday
+    - cron: '0 13 * * 0-4'  # Runs at 1 PM UTC, equivalent to 4 PM Riyadh time, from Sunday to Thursday
   
 permissions:
   contents: write  # Allows the workflow to write to the repository
@@ -22,31 +21,35 @@ jobs:
       with:
         python-version: '3.8'
 
+    - name: Cache Python dependencies
+      uses: actions/cache@v2
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+
     - name: Install Python Dependencies
       run: |
-        pip install selenium
-        pip install bs4
-        pip install pydrive
+        pip install -r requirements.txt
 
     - name: Install Google Chrome
       run: |
-        sudo apt-get update
-        sudo apt-get install -y google-chrome-stable
+        sudo apt-get update && sudo apt-get install -y google-chrome-stable
 
     - name: Download and Set up ChromeDriver
       run: |
-        CHROME_DRIVER_URL="https://drive.google.com/uc?export=download&id=1H6p3Pm9LNlUvBtjCQoeyREJmFdSxnkE_"
-        wget -N $CHROME_DRIVER_URL -O chromedriver.zip
+        CHROME_DRIVER_VERSION=$(wget -qO- "https://chromedriver.storage.googleapis.com/LATEST_RELEASE")
+        wget -N "https://chromedriver.storage.googleapis.com/${CHROME_DRIVER_VERSION}/chromedriver_linux64.zip" -O chromedriver.zip
         unzip chromedriver.zip -d ~/
         sudo mv -f ~/chromedriver /usr/local/share/
         sudo chmod +x /usr/local/share/chromedriver
         sudo ln -sf /usr/local/share/chromedriver /usr/local/bin/chromedriver
         sudo ln -sf /usr/local/share/chromedriver /usr/bin/chromedriver
 
-    
-      
     - name: Run percentage Script
       run: python percentage.py  # Make sure this script updates OutputResults.csv
+
     - name: Commit and Push Output File
       env:
         ACCESS_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
@@ -54,6 +57,5 @@ jobs:
         git config --global user.name 'SoloSaudiDeveloper'
         git config --global user.email 'SoloSaudiDeveloper@gmail.com'
         git add OutputResults.csv
-        git add percentage.csv
         git commit -m "Update output CSV file and percentage" || echo "No changes to commit"
         git push https://${{ secrets.PERSONAL_ACCESS_TOKEN }}@github.com/SoloSaudiDeveloper/shares.git main
