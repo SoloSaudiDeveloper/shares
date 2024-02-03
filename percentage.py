@@ -41,7 +41,7 @@ chrome_options.add_argument('--disable-dev-shm-usage')  # Overcome limited resou
 browser = webdriver.Chrome(options=chrome_options)
 
 # Placeholder for symbols list; replace with actual reading from CSV
-symbols = ['4344', '2222']  # Example symbols; replace with your list
+symbols = ['4344', '2222', '2020']  # Example symbols; replace with your list
 output_csv_file_path = 'OutputResults.csv'  # Define your output CSV file path
 
 # Process each symbol and output to CSV
