@@ -12,24 +12,29 @@ def process_url_dynamic(browser, symbol):
     print(f"Processing symbol {symbol}...")
     url = f"https://ar.tradingview.com/symbols/TADAWUL-{symbol}/financials-dividends/"
     browser.get(url)
+
     output_data = []
 
     try:
-        # Adjust this XPath based on the actual page structure
-        container_xpath = '//*[contains(@class, "containerClass")]' # Placeholder XPath, update this
-        WebDriverWait(browser, 10).until(EC.presence_of_element_located((By.XPATH, container_xpath)))
+        # Wait for the main content area to load
+        main_content_xpath = '//*[@id="js-category-content"]'
+        WebDriverWait(browser, 10).until(EC.presence_of_element_located((By.XPATH, main_content_xpath)))
 
-        # Adjust child element XPath based on actual structure and class names
-        child_elements_xpath = './/div[contains(@class, "childElementClass")]' # Placeholder XPath, update this
-        elements = browser.find_elements(By.XPATH, child_elements_xpath)
+        # Find the common parent element
+        parent_xpath = '//*[@id="js-category-content"]/div[2]/div/div/div[5]/div[2]/div/div[1]/div[1]/div[4]'
+        parent_element = browser.find_element(By.XPATH, parent_xpath)
 
-        for element in elements:
-            sanitized_text = sanitize(element.text)
-            if sanitized_text:  # Ensure text is not empty
-                output_data.append(sanitized_text)
+        # Automatically find all relevant child elements within the parent
+        child_elements = parent_element.find_elements(By.XPATH, "./*")
+
+        for child in child_elements:
+            sanitized_text = sanitize(child.text)
+            output_data.append(sanitized_text)
     except Exception as e:
         print(f"An error occurred while processing {symbol}: {e}")
+
     return output_data
+
 
 # Initialize WebDriver with ChromeOptions
 chrome_options = Options()
