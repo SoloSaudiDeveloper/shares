@@ -20,27 +20,45 @@ jobs:
       uses: actions/setup-python@v2
       with:
         python-version: '3.8'
-    
+
+    - name: Cache Python dependencies
+      uses: actions/cache@v2
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+
     - name: Install Python Dependencies
       run: |
-        python -m pip install --upgrade pip
+        pip install --upgrade pip
         pip install -r requirements.txt
-      env:
-        pythonLocation: /opt/hostedtoolcache/Python/3.8.18/x64
-        LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.8.18/x64/lib
 
     - name: Install Google Chrome
       run: |
         sudo apt-get update
         sudo apt-get install -y google-chrome-stable
-    
-    - name: Install Compatible ChromeDriver
+
+    - name: Download and Set up ChromeDriver
       run: |
-        CHROME_VERSION=$(google-chrome --version | grep -oP "\d+\.\d+\.\d+\.\d+")
-        CHROMEDRIVER_VERSION=$(curl -s "https://chromedriver.storage.googleapis.com/LATEST_RELEASE_$CHROME_VERSION")
-        wget -N "https://chromedriver.storage.googleapis.com/$CHROMEDRIVER_VERSION/chromedriver_linux64.zip" -O chromedriver.zip
+        CHROME_DRIVER_URL="https://drive.google.com/uc?export=download&id=1H6p3Pm9LNlUvBtjCQoeyREJmFdSxnkE_"
+        wget -N $CHROME_DRIVER_URL -O chromedriver.zip
         unzip chromedriver.zip -d ~/
         sudo mv -f ~/chromedriver /usr/local/share/
         sudo chmod +x /usr/local/share/chromedriver
         sudo ln -sf /usr/local/share/chromedriver /usr/local/bin/chromedriver
-        sudo ln -sf /usr
+        sudo ln -sf /usr/local/share/chromedriver /usr/bin/chromedriver
+
+    - name: Run percentage Script
+      run: python percentage.py  # Make sure this script updates OutputResults.csv
+
+    - name: Commit and Push Output File
+      env:
+        ACCESS_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+      run: |
+        git config --global user.name 'SoloSaudiDeveloper'
+        git config --global user.email 'SoloSaudiDeveloper@gmail.com'
+        git add OutputResults.csv
+        git add percentage.csv
+        git commit -m "Update output CSV file and percentage" || echo "No changes to commit"
+        git push https://${{ secrets.PERSONAL
