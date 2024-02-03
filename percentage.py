@@ -16,14 +16,14 @@ def process_url_dynamic(browser, symbol):
     output_data = []
 
     try:
-        # Wait for the container to be present
+        # Wait for the page container to load
         container_xpath = '//*[@id="js-category-content"]/div[2]/div/div/div[5]/div[2]/div/div[1]'
         WebDriverWait(browser, 10).until(EC.presence_of_element_located((By.XPATH, container_xpath)))
 
-        # Locate all elements with class 'values' within the container
-        values_elements = browser.find_elements(By.XPATH, f"{container_xpath}//*[@class='values']")
+        # Find elements by class name within the container
+        values_elements = browser.find_elements(By.XPATH, f"{container_xpath}//*[contains(@class, 'values-')]")
 
-        # Process each found element
+        # Extract and sanitize text from each element found
         for element in values_elements:
             sanitized_text = sanitize(element.text)
             output_data.append(sanitized_text)
@@ -39,20 +39,34 @@ chrome_options.add_argument('--no-sandbox')
 chrome_options.add_argument('--disable-dev-shm-usage')
 browser = webdriver.Chrome(options=chrome_options)
 
-# Assuming 'symbols' list is already populated
-symbols = ['4344', '2222']  # Example symbols list
-output_csv_file_path = 'OutputResults.csv'  # Update to your desired path
+# Assuming 'symbols' list is already populated (replace 'Symbols.csv' with your actual CSV file path)
+symbols = []  # Placeholder for symbols list
+csv_file_path = 'Symbols.csv'  # Update with your actual CSV file path
+output_csv_file_path = 'OutputResults.csv'  # Update with your desired output CSV file path
 
-# Process each symbol
+try:
+    with open(csv_file_path, newline='', encoding='utf-8') as csvfile:
+        csv_reader = csv.reader(csvfile)
+        for row in csv_reader:
+            if row:  # Ensure the row is not empty
+                symbols.append(row[0])
+    print("Symbols loaded.")
+except FileNotFoundError as e:
+    print(f"Error: File not found - {csv_file_path}")
+    print(e)
+    browser.quit()
+    exit()
+
+# Process each symbol and write to CSV
 with open(output_csv_file_path, 'w', newline='', encoding='utf-8-sig') as csvfile:
     csv_writer = csv.writer(csvfile)
-    csv_writer.writerow(['Symbol', 'Data'])  # Write the header
+    # Write header
+    csv_writer.writerow(['Symbol', 'Data'])
 
     for symbol in symbols:
         data = process_url_dynamic(browser, symbol)
-        # Write each value found for the symbol in a new row
-        for value in data:
-            csv_writer.writerow([symbol, value])
+        # Write symbol and concatenated data to CSV
+        csv_writer.writerow([symbol, ' | '.join(data)])  # Concatenate data with '|' for readability
         print(f"Data written for symbol {symbol}")
 
 browser.quit()
