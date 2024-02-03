@@ -43,8 +43,7 @@ jobs:
         sudo ln -sf /usr/local/share/chromedriver /usr/local/bin/chromedriver
         sudo ln -sf /usr/local/share/chromedriver /usr/bin/chromedriver
 
-    - name: Run Selenium Script
-      run: python main.py  # Make sure this script updates OutputResults.csv
+    
       
     - name: Run percentage Script
       run: python percentage.py  # Make sure this script updates OutputResults.csv
