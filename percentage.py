@@ -6,56 +6,53 @@ from selenium.webdriver.support import expected_conditions as EC
 import csv
 
 def sanitize(text):
+    """Sanitize the text by removing non-printable characters."""
     return ''.join(char for char in text if char.isprintable())
 
 def process_url_dynamic(browser, symbol):
+    """Process each symbol URL and extract data from elements with class 'container-OxVAcLqi'."""
     print(f"Processing symbol {symbol}...")
     url = f"https://ar.tradingview.com/symbols/TADAWUL-{symbol}/financials-dividends/"
     browser.get(url)
 
-    grouped_output_data = []
+    output_data = []
 
     try:
-        # Wait for the page container to load
-        container_xpath = '//*[@id="js-category-content"]/div[2]/div/div/div[5]/div[2]/div/div[1]'
-        WebDriverWait(browser, 10).until(EC.presence_of_element_located((By.XPATH, container_xpath)))
-
-        # Find each container
-        containers = browser.find_elements(By.XPATH, f"{container_xpath}//div[contains(@class, 'container-OxVAcLqi')]")
+        # Wait for the page to load and then find all 'container-OxVAcLqi' elements
+        WebDriverWait(browser, 10).until(
+            EC.presence_of_all_elements_located((By.CLASS_NAME, "container-OxVAcLqi"))
+        )
+        containers = browser.find_elements(By.CLASS_NAME, "container-OxVAcLqi")
 
         for container in containers:
-            # For each container, find elements with values classes
-            values_elements = container.find_elements(By.XPATH, ".//*[contains(@class, 'values-')]")
-            container_data = []
-            for element in values_elements:
-                sanitized_text = sanitize(element.text)
-                container_data.append(sanitized_text)
-            grouped_output_data.append(container_data)
+            # Extract and sanitize the text from each container
+            text = sanitize(container.text)
+            output_data.append(text)
     except Exception as e:
         print(f"An error occurred while processing {symbol}: {e}")
 
-    return grouped_output_data
+    return output_data
 
-# Initialize Selenium WebDriver
+# Setup Selenium WebDriver options
 chrome_options = Options()
-chrome_options.add_argument('--headless')
-chrome_options.add_argument('--no-sandbox')
-chrome_options.add_argument('--disable-dev-shm-usage')
+chrome_options.add_argument('--headless')  # Run in headless mode
+chrome_options.add_argument('--no-sandbox')  # Bypass OS security model
+chrome_options.add_argument('--disable-dev-shm-usage')  # Overcome limited resource problems
 browser = webdriver.Chrome(options=chrome_options)
 
-symbols = ['4344', '2222']  # Placeholder for actual symbols list
-output_csv_file_path = 'OutputResults.csv'
+# Placeholder for symbols list; replace with actual reading from CSV
+symbols = ['4344', '2222']  # Example symbols; replace with your list
+output_csv_file_path = 'OutputResults.csv'  # Define your output CSV file path
 
-# Process each symbol and write to CSV
+# Process each symbol and output to CSV
 with open(output_csv_file_path, 'w', newline='', encoding='utf-8-sig') as csvfile:
     csv_writer = csv.writer(csvfile)
-    # No single header row, because data is grouped
+    csv_writer.writerow(['Symbol', 'Container Text'])  # Writing header
 
     for symbol in symbols:
-        grouped_data = process_url_dynamic(browser, symbol)
-        for group in grouped_data:
-            # Write symbol and each group of data to a new row
-            csv_writer.writerow([symbol] + group)
+        container_texts = process_url_dynamic(browser, symbol)
+        for text in container_texts:
+            csv_writer.writerow([symbol, text])  # Write each container's text to the CSV
         print(f"Data written for symbol {symbol}")
 
 browser.quit()
