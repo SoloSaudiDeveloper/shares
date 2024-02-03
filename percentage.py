@@ -55,7 +55,7 @@ except FileNotFoundError as e:
     exit()
 
 # Assuming symbols are loaded
-output_csv_file_path = 'output_data.csv'
+output_csv_file_path = 'OutputResults.csv'
 with open(output_csv_file_path, 'w', newline='', encoding='utf-8-sig') as csvfile:
     csv_writer = csv.writer(csvfile)
     csv_writer.writerow(['Symbol', 'Data'])  # Writing header
