@@ -31,12 +31,12 @@ jobs:
 
     - name: Install Python Dependencies
       run: |
-        pip install --upgrade pip
+        
         pip install -r requirements.txt
 
     - name: Install Google Chrome
       run: |
-        sudo apt-get update
+        
         sudo apt-get install -y google-chrome-stable
 
     - name: Download and Set up ChromeDriver
