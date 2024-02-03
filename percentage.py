@@ -41,7 +41,7 @@ chrome_options.add_argument('--disable-dev-shm-usage')
 browser = webdriver.Chrome(options=chrome_options)
 
 # Assume 'symbols' list is already populated
-symbols = ['SYMBOL1', 'SYMBOL2']  # Example symbols list
+symbols = ['4344', '1211']  # Example symbols list
 output_csv_file_path = 'output_data.csv'
 
 # Process each symbol
