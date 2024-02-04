@@ -28,7 +28,7 @@ def process_url_dynamic(browser, symbol):
             children = parent.find_elements(By.XPATH, "./*")
             title_texts = [sanitize(child.text) for child in children if child.text.strip() != '']
             if title_texts:  # Only add if there's actual text extracted
-                output_data.append(title_texts)  # Removed 'Titles' label
+                output_data.append(title_texts)
 
         # Extract Data
         data_parents = browser.find_elements(By.XPATH, f"{container_xpath}//*[contains(@class, 'values-C9MdAMrq') and contains(@class, 'values-AtxjAQkN')]")
@@ -50,7 +50,19 @@ chrome_options.add_argument('--no-sandbox')
 chrome_options.add_argument('--disable-dev-shm-usage')
 browser = webdriver.Chrome(options=chrome_options)
 
-symbols = ['4344', '2020']  # Updated symbols list
+# Read symbols from CSV file
+csv_file_path = 'Symbols.csv'  # Ensure this path is correct
+symbols = []
+try:
+    with open(csv_file_path, mode='r', newline='', encoding='utf-8') as csvfile:
+        csv_reader = csv.reader(csvfile)
+        for row in csv_reader:
+            if row:  # Check if row is not empty
+                symbols.append(row[0])
+except FileNotFoundError:
+    print(f"Error: File '{csv_file_path}' not found. Please check the file path.")
+    exit()
+
 output_csv_file_path = 'OutputResults.csv'
 
 # Process each symbol and write to CSV
@@ -60,7 +72,6 @@ with open(output_csv_file_path, 'w', newline='', encoding='utf-8-sig') as csvfil
     for symbol in symbols:
         parent_child_data = process_url_dynamic(browser, symbol)
         for data_row in parent_child_data:
-            # Each set of child texts is written in a new row under the symbol
             csv_writer.writerow([symbol] + data_row)
         print(f"Data written for symbol {symbol}")
 
