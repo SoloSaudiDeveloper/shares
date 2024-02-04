@@ -24,7 +24,7 @@ def process_url_dynamic(browser, symbol):
 
         # Find elements by class name within the container container-vKM0WfUu
         #container_elements = browser.find_elements(By.XPATH, f"{container_xpath}//*[contains(@class, 'container-OxVAcLqi')]")
-         container_elements = browser.find_elements(By.XPATH, f"{container_xpath}//*[contains(@class, 'container-vKM0WfUu')]")
+        container_elements = browser.find_elements(By.XPATH, f"{container_xpath}//*[contains(@class, 'container-vKM0WfUu')]")
         # Extract and sanitize text from each element found
         for element in container_elements:
             sanitized_text = sanitize(element.text)
