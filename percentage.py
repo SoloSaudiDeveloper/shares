@@ -22,9 +22,9 @@ def process_url_dynamic(browser, symbol):
         container_xpath = '//*[@id="js-category-content"]/div[2]/div/div/div[5]/div[2]/div/div[1]'
         WebDriverWait(browser, 10).until(EC.presence_of_element_located((By.XPATH, container_xpath)))
 
-        # Find elements by class name within the container
-        container_elements = browser.find_elements(By.XPATH, f"{container_xpath}//*[contains(@class, 'container-OxVAcLqi')]")
-
+        # Find elements by class name within the container container-vKM0WfUu
+        #container_elements = browser.find_elements(By.XPATH, f"{container_xpath}//*[contains(@class, 'container-OxVAcLqi')]")
+         container_elements = browser.find_elements(By.XPATH, f"{container_xpath}//*[contains(@class, 'container-vKM0WfUu')]")
         # Extract and sanitize text from each element found
         for element in container_elements:
             sanitized_text = sanitize(element.text)
