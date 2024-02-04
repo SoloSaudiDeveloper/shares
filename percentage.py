@@ -50,7 +50,7 @@ chrome_options.add_argument('--no-sandbox')
 chrome_options.add_argument('--disable-dev-shm-usage')
 browser = webdriver.Chrome(options=chrome_options)
 
-symbols = ['4344', '2222']  # Updated symbols list
+symbols = ['4344', '2020']  # Updated symbols list
 output_csv_file_path = 'OutputResults.csv'
 
 # Process each symbol and write to CSV
