@@ -10,7 +10,7 @@ def sanitize(text):
     return ''.join(char for char in text if char.isprintable())
 
 def process_url_dynamic(browser, symbol):
-    """Process each URL and extract specified data elements."""
+    """Process each URL and extract data from specified classes and their child elements."""
     print(f"Processing symbol {symbol}...")
     url = f"https://ar.tradingview.com/symbols/TADAWUL-{symbol}/financials-dividends/"
     browser.get(url)
@@ -22,19 +22,19 @@ def process_url_dynamic(browser, symbol):
         container_xpath = '//*[@id="js-category-content"]/div[2]/div/div/div[5]/div[2]/div/div[1]'
         WebDriverWait(browser, 10).until(EC.presence_of_element_located((By.XPATH, container_xpath)))
 
-        # Extract and place titles at the top
+        # Extract Title Column Texts
+        title_columns = browser.find_elements(By.XPATH, f"{container_xpath}//*[contains(@class, 'titleColumn-C9MdAMrq')]")
+        for title_column in title_columns[:3]:  # Only process the first 3
+            title_text = sanitize(title_column.text)
+            output_data.append([title_text])  # Each title in its own row as the first cell
+
+        # Extract Titles
         title_parents = browser.find_elements(By.XPATH, f"{container_xpath}//*[contains(@class, 'values-OWKkVLyj') and contains(@class, 'values-AtxjAQkN')]")
-        for parent in title_parents[:3]:  # Limit to first 3 titles if needed
+        for parent in title_parents:
             children = parent.find_elements(By.XPATH, "./*")
             title_texts = [sanitize(child.text) for child in children if child.text.strip() != '']
             if title_texts:
-                output_data.append([symbol] + title_texts)
-
-        # Extract title columns
-        title_columns = browser.find_elements(By.XPATH, f"{container_xpath}//*[contains(@class, 'titleColumn-C9MdAMrq')]")
-        for title_column in title_columns[:3]:  # Limit to first 3 title columns
-            title_text = sanitize(title_column.text)
-            output_data.append([symbol, title_text])  # Place title text in the first cell
+                output_data.append(title_texts)
 
         # Extract Data
         data_parents = browser.find_elements(By.XPATH, f"{container_xpath}//*[contains(@class, 'values-C9MdAMrq') and contains(@class, 'values-AtxjAQkN')]")
@@ -42,8 +42,7 @@ def process_url_dynamic(browser, symbol):
             children = parent.find_elements(By.XPATH, "./*")
             child_texts = [sanitize(child.text) for child in children if child.text.strip() != '']
             if child_texts:
-                # Append children texts after the title column text
-                output_data[-1].extend(child_texts)
+                output_data.append(child_texts)
 
     except Exception as e:
         print(f"An error occurred while processing {symbol}: {e}")
@@ -57,18 +56,16 @@ chrome_options.add_argument('--no-sandbox')
 chrome_options.add_argument('--disable-dev-shm-usage')
 browser = webdriver.Chrome(options=chrome_options)
 
-# Read symbols from the CSV file
-csv_file_path = 'Symbols.csv'  # Adjust the filename as necessary
+# Read symbols from CSV file
 symbols = []
+csv_file_path = 'Symbols.csv'  # Update with your actual CSV file path
 try:
     with open(csv_file_path, newline='', encoding='utf-8') as csvfile:
         csv_reader = csv.reader(csvfile)
         for row in csv_reader:
-            symbols.append(row[0])
-except FileNotFoundError as e:
+            symbols.append(row[0])  # Assuming symbol is in the first column
+except FileNotFoundError:
     print(f"Error: File not found - {csv_file_path}")
-    print(e)
-    browser.quit()
     exit()
 
 output_csv_file_path = 'OutputResults.csv'
@@ -80,7 +77,8 @@ with open(output_csv_file_path, 'w', newline='', encoding='utf-8-sig') as csvfil
     for symbol in symbols:
         parent_child_data = process_url_dynamic(browser, symbol)
         for data_row in parent_child_data:
-            csv_writer.writerow(data_row)
+            # Prepend symbol to each row for clarity
+            csv_writer.writerow([symbol] + data_row)
         print(f"Data written for symbol {symbol}")
 
 browser.quit()
