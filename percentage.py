@@ -21,17 +21,25 @@ def process_url_dynamic(browser, symbol):
         container_xpath = '//*[@id="js-category-content"]/div[2]/div/div/div[5]/div[2]/div/div[1]'
         WebDriverWait(browser, 10).until(EC.presence_of_element_located((By.XPATH, container_xpath)))
 
-        # First, find and process the first three titleColumn-C9MdAMrq
+        # Extract title columns (first 3 only)
+        title_columns_texts = []
         title_columns = browser.find_elements(By.XPATH, f"{container_xpath}//div[contains(@class, 'titleColumn-C9MdAMrq')]")
-        title_texts = [sanitize(title_column.text) for title_column in title_columns[:3]]  # Processing only the first 3
+        for title_column in title_columns[:3]:  # Process only first 3
+            title_text = sanitize(title_column.text)
+            title_columns_texts.append(title_text)  # Collect first 3 title texts
 
-        # Then, find and process values-C9MdAMrq values-AtxjAQkN
-        values_parents = browser.find_elements(By.XPATH, f"{container_xpath}//*[contains(@class, 'values-C9MdAMrq') and contains(@class, 'values-AtxjAQkN')]")
-        for index, values_parent in enumerate(values_parents):
-            if index < len(title_texts):  # Ensure we don't exceed the titles list
-                children = values_parent.find_elements(By.XPATH, "./*")
-                child_texts = [sanitize(child.text) for child in children if child.text.strip() != '']
-                output_data.append([title_texts[index]] + child_texts)
+        # Extract Titles and Data, ensuring titles are placed at the beginning of the output data
+        title_parents = browser.find_elements(By.XPATH, f"{container_xpath}//*[contains(@class, 'values-OWKkVLyj') and contains(@class, 'values-AtxjAQkN')]")
+        titles = [sanitize(child.text) for parent in title_parents for child in parent.find_elements(By.XPATH, "./*") if child.text.strip() != '']
+
+        data_parents = browser.find_elements(By.XPATH, f"{container_xpath}//*[contains(@class, 'values-C9MdAMrq') and contains(@class, 'values-AtxjAQkN')]")
+        for index, parent in enumerate(data_parents):
+            children = parent.find_elements(By.XPATH, "./*")
+            child_texts = [sanitize(child.text) for child in children if child.text.strip() != '']
+            if index < len(title_columns_texts):  # Check to match title column count
+                output_data.append([title_columns_texts[index]] + titles + child_texts)
+            else:
+                output_data.append([""] + titles + child_texts)  # For additional rows without a specific title column
 
     except Exception as e:
         print(f"An error occurred while processing {symbol}: {e}")
@@ -45,14 +53,25 @@ chrome_options.add_argument('--no-sandbox')
 chrome_options.add_argument('--disable-dev-shm-usage')
 browser = webdriver.Chrome(options=chrome_options)
 
-# Reading symbols from a predefined list for demonstration
-symbols = ['4344', '2222']  # Example symbols
+# Read symbols from CSV file and process each symbol
+csv_file_path = 'Symbols.csv'  # Ensure this path is correct
+output_csv_file_path = 'OutputResults.csv'
+symbols = []
+try:
+    with open(csv_file_path, newline='', encoding='utf-8') as csvfile:
+        csv_reader = csv.reader(csvfile)
+        for row in csv_reader:
+            if row:  # Ensure the row is not empty
+                symbols.append(row[0])
+except FileNotFoundError as e:
+    print(f"Error: File not found - {csv_file_path}")
+    print(e)
+    browser.quit()
+    exit()
 
 # Process each symbol and write to CSV
-output_csv_file_path = 'OutputResults.csv'
 with open(output_csv_file_path, 'w', newline='', encoding='utf-8-sig') as csvfile:
     csv_writer = csv.writer(csvfile)
-    
     for symbol in symbols:
         parent_child_data = process_url_dynamic(browser, symbol)
         for data_row in parent_child_data:
