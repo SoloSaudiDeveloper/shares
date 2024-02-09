@@ -1,16 +1,9 @@
-from selenium import webdriver
-from selenium.webdriver.common.by import By
-from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-import csv
-
 def sanitize(text):
     """Clean the text by removing non-printable characters."""
     return ''.join(char for char in text if char.isprintable())
 
 def process_url_dynamic(browser, symbol):
-    """Process each URL and extract specific data, including separated top row values and other details."""
+    """Process each URL and extract specific data, including separated top row values."""
     print(f"Processing symbol {symbol}...")
     url = f"https://ar.tradingview.com/symbols/TADAWUL-{symbol}/financials-dividends/"
     browser.get(url)
@@ -21,18 +14,13 @@ def process_url_dynamic(browser, symbol):
         container_xpath = '//*[@id="js-category-content"]/div[2]/div/div/div[5]/div[2]/div/div[1]'
         WebDriverWait(browser, 10).until(EC.presence_of_element_located((By.XPATH, container_xpath)))
 
-        # Extract and separate each text from elements with 'values-OWKkVLyj values-AtxjAQkN'
+        # Extract every text from elements with the class 'values-OWKkVLyj values-AtxjAQkN' and separate them
         top_row_elements = browser.find_elements(By.XPATH, f"{container_xpath}//*[contains(@class, 'values-OWKkVLyj') and contains(@class, 'values-AtxjAQkN')]")
-        top_row_texts = []
-        for element in top_row_elements:
-            if element.text.strip() != '':
-                # Assuming texts are separated by new lines within a single element
-                texts = sanitize(element.text).split('\n')
-                top_row_texts.extend(texts)  # Extend ensures each text goes into its cell
-
-        # Add the separated top row texts as the first data row for this symbol
+        # Flatten all texts into a single list, each text becomes a separate entry
+        top_row_texts = [sanitize(text) for element in top_row_elements for text in element.text.split('\n') if text.strip() != '']
         if top_row_texts:
-            output_data.append(top_row_texts)  # No "Top Row Titles" label
+            output_data.append(top_row_texts)  # Append as the top row without a title
+
 
         
         # First, find and process the first three titleColumn-C9MdAMrq
@@ -60,16 +48,16 @@ chrome_options.add_argument('--no-sandbox')
 chrome_options.add_argument('--disable-dev-shm-usage')
 browser = webdriver.Chrome(options=chrome_options)
 
-# Process each symbol and write to CSV
-symbols = ['4344', '2222']  # Example symbols
+symbols = ['4344', '2222']  # Define your symbols list here
 output_csv_file_path = 'OutputResults.csv'
-# After collecting data for all symbols
-with open('OutputResults.csv', 'w', newline='', encoding='utf-8-sig') as csvfile:
+
+# Write all symbol data to a single CSV file
+with open(output_csv_file_path, 'w', newline='', encoding='utf-8-sig') as csvfile:
     csv_writer = csv.writer(csvfile)
     for symbol in symbols:
-        parent_child_data = process_url_dynamic(browser, symbol)
-        for data_row in parent_child_data:
-            csv_writer.writerow([symbol] + data_row)  # Include symbol for each data row
+        symbol_data = process_url_dynamic(browser, symbol)
+        for data_row in symbol_data:
+            csv_writer.writerow([symbol] + data_row)  # Include symbol in each row
         print(f"Data written for symbol {symbol}")
 
 browser.quit()
