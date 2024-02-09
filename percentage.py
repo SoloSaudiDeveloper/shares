@@ -49,11 +49,16 @@ def write_to_csv(output_csv_file_path, data_for_csv):
 
 def main():
     browser = initialize_webdriver()
-    symbols = ['4344', '2222']  # Example symbols
+    symbols = ['4344', '2222']  # Example symbols list, adjust as needed
 
     for symbol in symbols:
         data_for_csv = process_url_dynamic(browser, symbol)
-        output_csv_file_path = f'OutputResults_{symbol}.csv'
+        if not data_for_csv:  # Debugging: Check if data extraction returned empty
+            print(f"No data extracted for symbol {symbol}.")
+            continue  # Skip to next symbol if no data was extracted
+        
+        output_csv_file_path = f'OutputResults_{symbol}.csv'  # Separate file for each symbol
+        print(f"Writing data to {output_csv_file_path}...")  # Debugging: Confirm file writing
         write_to_csv(output_csv_file_path, data_for_csv)
         print(f"Data written to {output_csv_file_path} for symbol {symbol}")
 
