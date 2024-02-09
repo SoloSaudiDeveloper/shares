@@ -10,7 +10,7 @@ def sanitize(text):
     return ''.join(char for char in text if char.isprintable())
 
 def process_url_dynamic(browser, symbol):
-    """Process each URL and extract specific data, including top row values and title columns."""
+    """Process each URL and extract specific data, including separated top row values and other details."""
     print(f"Processing symbol {symbol}...")
     url = f"https://ar.tradingview.com/symbols/TADAWUL-{symbol}/financials-dividends/"
     browser.get(url)
@@ -21,13 +21,20 @@ def process_url_dynamic(browser, symbol):
         container_xpath = '//*[@id="js-category-content"]/div[2]/div/div/div[5]/div[2]/div/div[1]'
         WebDriverWait(browser, 10).until(EC.presence_of_element_located((By.XPATH, container_xpath)))
 
-        # Extract every text from elements with the class 'values-OWKkVLyj values-AtxjAQkN' and place them on the top row
+        # Extract and separate each text from elements with 'values-OWKkVLyj values-AtxjAQkN'
         top_row_elements = browser.find_elements(By.XPATH, f"{container_xpath}//*[contains(@class, 'values-OWKkVLyj') and contains(@class, 'values-AtxjAQkN')]")
-        top_row_texts = [sanitize(element.text) for element in top_row_elements if element.text.strip() != '']
-        if top_row_texts:
-            # Add the collected texts as the first row for this symbol
-            output_data.append(["Top Row Titles"] + top_row_texts)
+        top_row_texts = []
+        for element in top_row_elements:
+            if element.text.strip() != '':
+                # Assuming texts are separated by new lines within a single element
+                texts = sanitize(element.text).split('\n')
+                top_row_texts.extend(texts)  # Extend ensures each text goes into its cell
 
+        # Add the separated top row texts as the first data row for this symbol
+        if top_row_texts:
+            output_data.append(top_row_texts)  # No "Top Row Titles" label
+
+        
         # First, find and process the first three titleColumn-C9MdAMrq
         title_columns = browser.find_elements(By.XPATH, f"{container_xpath}//div[contains(@class, 'titleColumn-C9MdAMrq')]")
         title_texts = [sanitize(title_column.text) for title_column in title_columns[:3]]  # Processing only the first 3
@@ -56,13 +63,13 @@ browser = webdriver.Chrome(options=chrome_options)
 # Process each symbol and write to CSV
 symbols = ['4344', '2222']  # Example symbols
 output_csv_file_path = 'OutputResults.csv'
-with open(output_csv_file_path, 'w', newline='', encoding='utf-8-sig') as csvfile:
+# After collecting data for all symbols
+with open('OutputResults.csv', 'w', newline='', encoding='utf-8-sig') as csvfile:
     csv_writer = csv.writer(csvfile)
-    # Write a header or leave it according to your needs
     for symbol in symbols:
         parent_child_data = process_url_dynamic(browser, symbol)
         for data_row in parent_child_data:
-            csv_writer.writerow([symbol] + data_row)  # Include symbol in each row
+            csv_writer.writerow([symbol] + data_row)  # Include symbol for each data row
         print(f"Data written for symbol {symbol}")
 
 browser.quit()
