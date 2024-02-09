@@ -10,7 +10,6 @@ def sanitize(text):
     return ''.join(char for char in text if char.isprintable())
 
 def process_url_dynamic(browser, symbol):
-    """Extract and organize data from the webpage into a structured table format."""
     print(f"Processing symbol {symbol}...")
     url = f"https://ar.tradingview.com/symbols/TADAWUL-{symbol}/financials-dividends/"
     browser.get(url)
@@ -20,15 +19,29 @@ def process_url_dynamic(browser, symbol):
         container_xpath = '//*[@id="js-category-content"]/div[2]/div/div/div[5]/div[2]/div/div[1]'
         WebDriverWait(browser, 10).until(EC.presence_of_element_located((By.XPATH, container_xpath)))
 
-        # Example of extracting data, this should be adapted to your specific needs
-        elements = browser.find_elements(By.XPATH, f"{container_xpath}//*[contains(@class, 'values-')]")
-        for element in elements:
-            structured_data.append([symbol, sanitize(element.text)])
+        # Assuming 'values-OWKkVLyj values-AtxjAQkN' contains the headers
+        headers_elements = browser.find_elements(By.XPATH, f"{container_xpath}//*[contains(@class, 'values-OWKkVLyj') and contains(@class, 'values-AtxjAQkN')]")
+        headers = [sanitize(element.text) for element in headers_elements if element.text.strip() != '']
+        
+        # Ensure headers are in the first row if not already included
+        if structured_data == []:
+            structured_data.append(headers)
+        
+        # Now, extract and structure data for each 'data-point' class (or similar)
+        # Example: Extracting data points
+        data_elements = browser.find_elements(By.XPATH, f"{container_xpath}//*[contains(@class, 'data-point-class')]")
+        data_row = [symbol]  # Start the row with the symbol
+        for element in data_elements:
+            data = sanitize(element.text)
+            data_row.append(data)  # Each data point added as a separate cell
+        
+        structured_data.append(data_row)
     
     except Exception as e:
         print(f"An error occurred while processing {symbol}: {e}")
 
     return structured_data
+
 
 def initialize_webdriver():
     chrome_options = Options()
@@ -45,19 +58,19 @@ def write_to_csv(output_csv_file_path, data_for_csv):
 
 def main():
     browser = initialize_webdriver()
-    symbols = ['4344', '2222']  # Define your symbols list here
+    symbols = ['4344', '2222']  # Example symbols list
 
     all_data_for_csv = []
     for symbol in symbols:
         symbol_data = process_url_dynamic(browser, symbol)
-        all_data_for_csv.extend(symbol_data)  # Append data for each symbol to a single list
+        all_data_for_csv.extend(symbol_data)  # Collecting data for all symbols
 
-    # Write all extracted data into a single CSV file
     output_csv_file_path = 'OutputResults.csv'
     write_to_csv(output_csv_file_path, all_data_for_csv)
-    print(f"All data written to {output_csv_file_path}")
+    print("All data written to", output_csv_file_path)
 
     browser.quit()
+
 
 if __name__ == "__main__":
     main()
