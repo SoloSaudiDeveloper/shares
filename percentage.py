@@ -1,3 +1,10 @@
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+import csv
+
 def sanitize(text):
     """Clean the text by removing non-printable characters."""
     return ''.join(char for char in text if char.isprintable())
@@ -21,43 +28,47 @@ def process_url_dynamic(browser, symbol):
         if top_row_texts:
             output_data.append(top_row_texts)  # Append as the top row without a title
 
-
-        
-        # First, find and process the first three titleColumn-C9MdAMrq
-        title_columns = browser.find_elements(By.XPATH, f"{container_xpath}//div[contains(@class, 'titleColumn-C9MdAMrq')]")
-        title_texts = [sanitize(title_column.text) for title_column in title_columns[:3]]  # Processing only the first 3
-
-        # Then, find and process values-C9MdAMrq values-AtxjAQkN
-        values_parents = browser.find_elements(By.XPATH, f"{container_xpath}//*[contains(@class, 'values-C9MdAMrq') and contains(@class, 'values-AtxjAQkN')]")
-        for index, values_parent in enumerate(values_parents[:3]):  # Match to the number of titles processed
-            children = values_parent.find_elements(By.XPATH, "./*")
-            child_texts = [sanitize(child.text) for child in children if child.text.strip() != '']
-            if index < len(title_texts):
-                # Append data rows with titles and respective values
-                output_data.append([title_texts[index]] + child_texts)
+        # Continue with other data extraction as before, adapted to your specific needs...
 
     except Exception as e:
         print(f"An error occurred while processing {symbol}: {e}")
 
     return output_data
 
-# Initialize Selenium WebDriver
-chrome_options = Options()
-chrome_options.add_argument('--headless')
-chrome_options.add_argument('--no-sandbox')
-chrome_options.add_argument('--disable-dev-shm-usage')
-browser = webdriver.Chrome(options=chrome_options)
+def initialize_webdriver():
+    """Initializes and returns a Selenium WebDriver with specified options."""
+    chrome_options = Options()
+    chrome_options.add_argument('--headless')
+    chrome_options.add_argument('--no-sandbox')
+    chrome_options.add_argument('--disable-dev-shm-usage')
+    return webdriver.Chrome(options=chrome_options)
 
-symbols = ['4344', '2222']  # Define your symbols list here
-output_csv_file_path = 'OutputResults.csv'
+def write_to_csv(output_csv_file_path, data_for_csv):
+    """Writes provided data to a CSV file at the specified path."""
+    with open(output_csv_file_path, 'w', newline='', encoding='utf-8-sig') as csvfile:
+        csv_writer = csv.writer(csvfile)
+        for row in data_for_csv:
+            csv_writer.writerow(row)
 
-# Write all symbol data to a single CSV file
-with open(output_csv_file_path, 'w', newline='', encoding='utf-8-sig') as csvfile:
-    csv_writer = csv.writer(csvfile)
+def main():
+    """Main function to orchestrate the web scraping and CSV writing process."""
+    browser = initialize_webdriver()
+    symbols = ['4344', '2222']  # Define your symbols list here
+    all_data_for_csv = []
+
     for symbol in symbols:
         symbol_data = process_url_dynamic(browser, symbol)
+        # Prefix each row with the symbol for clarity
         for data_row in symbol_data:
-            csv_writer.writerow([symbol] + data_row)  # Include symbol in each row
-        print(f"Data written for symbol {symbol}")
+            all_data_for_csv.append([symbol] + data_row)
 
-browser.quit()
+    # Specify the output CSV file path
+    output_csv_file_path = 'OutputResults.csv'
+    # Write all collected data to the CSV
+    write_to_csv(output_csv_file_path, all_data_for_csv)
+    print(f"All data written to {output_csv_file_path}")
+
+    browser.quit()
+
+if __name__ == "__main__":
+    main()
