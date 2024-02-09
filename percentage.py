@@ -14,21 +14,17 @@ def process_url_dynamic(browser, symbol):
     print(f"Processing symbol {symbol}...")
     url = f"https://ar.tradingview.com/symbols/TADAWUL-{symbol}/financials-dividends/"
     browser.get(url)
-
     structured_data = []
 
     try:
         container_xpath = '//*[@id="js-category-content"]/div[2]/div/div/div[5]/div[2]/div/div[1]'
         WebDriverWait(browser, 10).until(EC.presence_of_element_located((By.XPATH, container_xpath)))
 
-        # Top row titles
-        top_row_elements = browser.find_elements(By.XPATH, f"{container_xpath}//*[contains(@class, 'values-OWKkVLyj') and contains(@class, 'values-AtxjAQkN')]")
-        top_row = [sanitize(element.text) for element in top_row_elements if element.text.strip() != '']
-        structured_data.append(top_row)  # This will be the table header
-
-        # Following rows: Example for extracting additional data
-        # Implement logic to extract other required data and append to structured_data
-
+        # Example of extracting data, this should be adapted to your specific needs
+        elements = browser.find_elements(By.XPATH, f"{container_xpath}//*[contains(@class, 'values-')]")
+        for element in elements:
+            structured_data.append([symbol, sanitize(element.text)])
+    
     except Exception as e:
         print(f"An error occurred while processing {symbol}: {e}")
 
@@ -49,18 +45,17 @@ def write_to_csv(output_csv_file_path, data_for_csv):
 
 def main():
     browser = initialize_webdriver()
-    symbols = ['4344', '2222']  # Example symbols list, adjust as needed
+    symbols = ['4344', '2222']  # Define your symbols list here
 
+    all_data_for_csv = []
     for symbol in symbols:
-        data_for_csv = process_url_dynamic(browser, symbol)
-        if not data_for_csv:  # Debugging: Check if data extraction returned empty
-            print(f"No data extracted for symbol {symbol}.")
-            continue  # Skip to next symbol if no data was extracted
-        
-        output_csv_file_path = f'OutputResults_{symbol}.csv'  # Separate file for each symbol
-        print(f"Writing data to {output_csv_file_path}...")  # Debugging: Confirm file writing
-        write_to_csv(output_csv_file_path, data_for_csv)
-        print(f"Data written to {output_csv_file_path} for symbol {symbol}")
+        symbol_data = process_url_dynamic(browser, symbol)
+        all_data_for_csv.extend(symbol_data)  # Append data for each symbol to a single list
+
+    # Write all extracted data into a single CSV file
+    output_csv_file_path = 'OutputResults.csv'
+    write_to_csv(output_csv_file_path, all_data_for_csv)
+    print(f"All data written to {output_csv_file_path}")
 
     browser.quit()
 
