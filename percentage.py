@@ -10,7 +10,7 @@ def sanitize(text):
     return ''.join(char for char in text if char.isprintable())
 
 def process_url_dynamic(browser, symbol):
-    """Process each URL and extract specific data, including separated top row values and other values."""
+    """Process each URL and extract specific data, focusing on desired elements."""
     print(f"Processing symbol {symbol}...")
     url = f"https://ar.tradingview.com/symbols/TADAWUL-{symbol}/financials-dividends/"
     browser.get(url)
@@ -21,9 +21,9 @@ def process_url_dynamic(browser, symbol):
         container_xpath = '//*[@id="js-category-content"]/div[2]/div/div/div[5]/div[2]/div/div[1]'
         WebDriverWait(browser, 10).until(EC.presence_of_element_located((By.XPATH, container_xpath)))
 
-        # Adjusted XPath to exclude 'alignLeft-OxVAcLqi' from top row elements
+        # Adjusted XPath to exclude certain elements based on class
         top_row_elements = browser.find_elements(By.XPATH, f"{container_xpath}//*[contains(@class, 'values-OWKkVLyj') and contains(@class, 'values-AtxjAQkN') and not(contains(@class, 'alignLeft-OxVAcLqi'))]")
-        top_row_texts = [sanitize(element.text) for element in top_row_elements if element.text.strip() != '']
+        top_row_texts = [sanitize(element.text) for element in top_row_elements for text in element.text.split('\n') if text.strip() != '']
         if top_row_texts:
             output_data.append([''] + top_row_texts)  # Append as the top row without a title, prefix with empty string for 'Info'
 
@@ -54,7 +54,7 @@ def main():
 
     with open(output_csv_file_path, 'w', newline='', encoding='utf-8-sig') as csvfile:
         csv_writer = csv.writer(csvfile)
-        header = ['Symbol', 'Info'] + ['Year ' + str(i) for i in range(1, 6)]  # Adjust the number of years if needed
+        header = ['Symbol', 'Info'] + ['Data ' + str(i) for i in range(1, 6)]  # Adjust according to your data needs
         csv_writer.writerow(header)
         for symbol in symbols:
             symbol_data = process_url_dynamic(browser, symbol)
