@@ -21,25 +21,33 @@ def process_url_dynamic(browser, symbol):
         container_xpath = '//*[@id="js-category-content"]/div[2]/div/div/div[5]/div[2]/div/div[1]'
         WebDriverWait(browser, 10).until(EC.presence_of_element_located((By.XPATH, container_xpath)))
 
-        # Extract and separately append each text from elements with the classes 'values-OWKkVLyj' and 'values-AtxjAQkN'
+        # Extract every text from elements with the class 'values-OWKkVLyj values-AtxjAQkN' and separate them
         top_row_elements = browser.find_elements(By.XPATH, f"{container_xpath}//*[contains(@class, 'values-OWKkVLyj') and contains(@class, 'values-AtxjAQkN')]")
         top_row_texts = [sanitize(text) for element in top_row_elements for text in element.text.split('\n') if text.strip() != '']
         if top_row_texts:
-            output_data.append(top_row_texts)  # Append as the top row without a title
+            output_data.append([""] + top_row_texts)  # Prepend empty string for symbol column
 
         # Extract first three titleColumn-C9MdAMrq and their corresponding values-C9MdAMrq values-AtxjAQkN
         title_columns = browser.find_elements(By.XPATH, f"{container_xpath}//div[contains(@class, 'titleColumn-C9MdAMrq')]")
         values_parents = browser.find_elements(By.XPATH, f"{container_xpath}//*[contains(@class, 'values-C9MdAMrq') and contains(@class, 'values-AtxjAQkN')]")
 
         for index in range(min(3, len(title_columns), len(values_parents))):  # Process up to first 3 matches
-            title_text = sanitize(title_columns[index].text)
-            children_texts = [sanitize(child.text) for child in values_parents[index].find_elements(By.XPATH, "./*") if child.text.strip() != '']
-            output_data.append([title_text] + children_texts)
+            if index < len(title_columns):
+                title_text = sanitize(title_columns[index].text)
+            else:
+                title_text = ""
+            if index < len(values_parents):
+                children_texts = [sanitize(child.text) for child in values_parents[index].find_elements(By.XPATH, "./*") if child.text.strip() != '']
+            else:
+                children_texts = []
+            # Ensure data row starts with symbol, followed by title, then values
+            output_data.append([symbol, title_text] + children_texts)
 
     except Exception as e:
         print(f"An error occurred while processing {symbol}: {e}")
 
     return output_data
+
 
 # Initialize Selenium WebDriver
 chrome_options = Options()
