@@ -21,25 +21,32 @@ def process_url_dynamic(browser, symbol):
         container_xpath = '//*[@id="js-category-content"]/div[2]/div/div/div[5]/div[2]/div/div[1]'
         WebDriverWait(browser, 10).until(EC.presence_of_element_located((By.XPATH, container_xpath)))
 
-        # Adjusted XPath to exclude certain elements based on class
-        top_row_elements = browser.find_elements(By.XPATH, f"{container_xpath}//*[contains(@class, 'values-OWKkVLyj') and contains(@class, 'values-AtxjAQkN') and not(contains(@class, 'alignLeft-OxVAcLqi'))]")
-        top_row_texts = [sanitize(element.text) for element in top_row_elements for text in element.text.split('\n') if text.strip() != '']
-        if top_row_texts:
-            output_data.append([''] + top_row_texts)  # Append as the top row without a title, prefix with empty string for 'Info'
+        # Find top row elements excluding elements with 'alignLeft-OxVAcLqi'
+        top_row_elements = browser.find_elements(By.XPATH, f"{container_xpath}//*[contains(@class, 'values-OWKkVLyj') and contains(@class, 'values-AtxjAQkN')]")
+        for element in top_row_elements:
+            # Process only children with 'container-OxVAcLqi' excluding those also with 'alignLeft-OxVAcLqi'
+            child_elements = element.find_elements(By.XPATH, "./*[contains(@class, 'container-OxVAcLqi') and not(contains(@class, 'alignLeft-OxVAcLqi'))]")
+            child_texts = [sanitize(child.text) for child in child_elements if child.text.strip() != '']
+            if child_texts:
+                output_data.append(child_texts)
 
-        # Extract first three titleColumn-C9MdAMrq and their corresponding values-C9MdAMrq values-AtxjAQkN
+        # Extract first three titleColumn-C9MdAMrq and their corresponding values excluding 'alignLeft-OxVAcLqi'
         title_columns = browser.find_elements(By.XPATH, f"{container_xpath}//div[contains(@class, 'titleColumn-C9MdAMrq')]")
         values_parents = browser.find_elements(By.XPATH, f"{container_xpath}//*[contains(@class, 'values-C9MdAMrq') and contains(@class, 'values-AtxjAQkN')]")
 
-        for index in range(min(3, len(title_columns), len(values_parents))):  # Process up to first 3 matches
+        for index in range(min(3, len(title_columns), len(values_parents))):
             title_text = sanitize(title_columns[index].text)
-            children_texts = [sanitize(child.text) for child in values_parents[index].find_elements(By.XPATH, "./*") if child.text.strip() != '']
-            output_data.append([title_text] + children_texts)
+            # Filter for specific child class patterns
+            child_elements = values_parents[index].find_elements(By.XPATH, "./*[contains(@class, 'container-OxVAcLqi') and not(contains(@class, 'alignLeft-OxVAcLqi'))]")
+            children_texts = [sanitize(child.text) for child in child_elements if child.text.strip() != '']
+            if children_texts:
+                output_data.append([title_text] + children_texts)
 
     except Exception as e:
         print(f"An error occurred while processing {symbol}: {e}")
 
     return output_data
+
 
 # Initialize Selenium WebDriver
 chrome_options = Options()
