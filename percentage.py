@@ -21,9 +21,9 @@ def process_url_dynamic(browser, symbol):
         container_xpath = '//*[@id="js-category-content"]/div[2]/div/div/div[5]/div[2]/div/div[1]'
         WebDriverWait(browser, 10).until(EC.presence_of_element_located((By.XPATH, container_xpath)))
 
-        # Extract and separately append each text from elements with the classes 'values-OWKkVLyj' and 'values-AtxjAQkN'
-        top_row_elements = browser.find_elements(By.XPATH, f"{container_xpath}//*[contains(@class, 'values-OWKkVLyj') and contains(@class, 'values-AtxjAQkN')]")
-        top_row_texts = [sanitize(text) for element in top_row_elements for text in element.text.split('\n') if text.strip() != '']
+        # Adjusted XPath to exclude 'alignLeft-OxVAcLqi' from top row elements
+        top_row_elements = browser.find_elements(By.XPATH, f"{container_xpath}//*[contains(@class, 'values-OWKkVLyj') and contains(@class, 'values-AtxjAQkN') and not(contains(@class, 'alignLeft-OxVAcLqi'))]")
+        top_row_texts = [sanitize(element.text) for element in top_row_elements if element.text.strip() != '']
         if top_row_texts:
             output_data.append([''] + top_row_texts)  # Append as the top row without a title, prefix with empty string for 'Info'
 
