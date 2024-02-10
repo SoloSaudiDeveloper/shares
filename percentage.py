@@ -21,27 +21,26 @@ def process_url_dynamic(browser, symbol):
         container_xpath = '//*[@id="js-category-content"]/div[2]/div/div/div[5]/div[2]/div/div[1]'
         WebDriverWait(browser, 10).until(EC.presence_of_element_located((By.XPATH, container_xpath)))
 
-        # Extract and separately append each text from elements with the classes 'values-OWKkVLyj' and 'values-AtxjAQkN'
+        # Simplify the extraction by using more precise XPaths and handling each section distinctly
         top_row_elements = browser.find_elements(By.XPATH, f"{container_xpath}//*[contains(@class, 'values-OWKkVLyj') and contains(@class, 'values-AtxjAQkN')]")
-        top_row_texts = [sanitize(text) for element in top_row_elements for text in element.text.split('\n') if text.strip() != '']
+        top_row_texts = [sanitize(elem.text) for elem in top_row_elements if elem.text.strip()]
         if top_row_texts:
-            output_data.append(top_row_texts)  # Append as the top row without a title
+            output_data.append(["Years"] + top_row_texts)  # Explicitly label the top row for clarity
 
-        # Extract first three titleColumn-C9MdAMrq and their corresponding values-C9MdAMrq values-AtxjAQkN
-        title_columns = browser.find_elements(By.XPATH, f"{container_xpath}//div[contains(@class, 'titleColumn-C9MdAMrq')]")
-        values_parents = browser.find_elements(By.XPATH, f"{container_xpath}//*[contains(@class, 'values-C9MdAMrq') and contains(@class, 'values-AtxjAQkN')]")
-
-        for index in range(min(3, len(title_columns), len(values_parents))):  # Process up to first 3 matches
-            title_text = sanitize(title_columns[index].text)
-            children_texts = [sanitize(child.text) for child in values_parents[index].find_elements(By.XPATH, "./*") if child.text.strip() != '']
-            output_data.append([title_text] + children_texts)
+        # Process additional data with a refined approach
+        data_rows = browser.find_elements(By.XPATH, f"{container_xpath}//div[contains(@class, 'titleColumn-C9MdAMrq')]")
+        for row in data_rows[:3]:  # Limit to first 3 for simplicity
+            title = sanitize(row.text)
+            values = [sanitize(value.text) for value in row.find_elements(By.XPATH, ".//following-sibling::div[contains(@class, 'values-C9MdAMrq')][1]/*") if value.text.strip()]
+            if title and values:
+                output_data.append([title] + values)
 
     except Exception as e:
         print(f"An error occurred while processing {symbol}: {e}")
 
     return output_data
 
-# Initialize Selenium WebDriver
+# Initialize Selenium WebDriver options for better performance and compatibility
 chrome_options = Options()
 chrome_options.add_argument('--headless')
 chrome_options.add_argument('--no-sandbox')
@@ -49,30 +48,18 @@ chrome_options.add_argument('--disable-dev-shm-usage')
 browser = webdriver.Chrome(options=chrome_options)
 
 def main():
-    symbols = ['4344', '2222']  # Define your symbols list here
+    symbols = ['4344', '2222']
     output_csv_file_path = 'OutputResults.csv'
 
     with open(output_csv_file_path, 'w', newline='', encoding='utf-8-sig') as csvfile:
         csv_writer = csv.writer(csvfile)
-        first_row = True
+        # Include headers for better CSV structure
+        csv_writer.writerow(["Symbol", "Data Type", "Year 1", "Year 2", "Year 3"])
         for symbol in symbols:
             symbol_data = process_url_dynamic(browser, symbol)
-            for row_index, data_row in enumerate(symbol_data):
-                if first_row:
-                    # Write the header row as is
-                    csv_writer.writerow([symbol] + data_row)
-                    first_row = False
-                else:
-                    # For non-header rows, concatenate all values into a single cell starting from the second position
-                    concatenated_data = ','.join(data_row)  # You can change ',' to any delimiter you prefer
-                    if row_index == 1:
-                        # For the first data row, write it directly after the symbol
-                        csv_writer.writerow([symbol, concatenated_data])
-                    else:
-                        # For subsequent data rows, prepend an empty string for the symbol column to align the data correctly
-                        csv_writer.writerow(['', concatenated_data])
+            for data_row in symbol_data:
+                csv_writer.writerow([symbol] + data_row)
             print(f"Data written for symbol {symbol}")
-            first_row = True  # Reset for the next symbol
 
     browser.quit()
 
