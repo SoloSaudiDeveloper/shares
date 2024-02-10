@@ -25,7 +25,7 @@ def process_url_dynamic(browser, symbol):
         top_row_elements = browser.find_elements(By.XPATH, f"{container_xpath}//*[contains(@class, 'values-OWKkVLyj') and contains(@class, 'values-AtxjAQkN')]")
         top_row_texts = [sanitize(text) for element in top_row_elements for text in element.text.split('\n') if text.strip() != '']
         if top_row_texts:
-            output_data.append(top_row_texts)  # Append as the top row without a title
+            output_data.append([''] + top_row_texts)  # Append as the top row without a title, prefix with empty string for 'Info'
 
         # Extract first three titleColumn-C9MdAMrq and their corresponding values-C9MdAMrq values-AtxjAQkN
         title_columns = browser.find_elements(By.XPATH, f"{container_xpath}//div[contains(@class, 'titleColumn-C9MdAMrq')]")
@@ -54,10 +54,13 @@ def main():
 
     with open(output_csv_file_path, 'w', newline='', encoding='utf-8-sig') as csvfile:
         csv_writer = csv.writer(csvfile)
+        header = ['Symbol', 'Info'] + ['Year ' + str(i) for i in range(1, 6)]  # Adjust the number of years if needed
+        csv_writer.writerow(header)
         for symbol in symbols:
             symbol_data = process_url_dynamic(browser, symbol)
             for data_row in symbol_data:
-                csv_writer.writerow([symbol] + data_row)  # Include symbol in each row
+                row = [symbol] + data_row
+                csv_writer.writerow(row)  # Write the modified row structure
             print(f"Data written for symbol {symbol}")
 
     browser.quit()
